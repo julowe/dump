@@ -4,6 +4,11 @@ Made quick to illustrate possible platform for keyboard support. OpenSCAD file i
 
 Print base with wide platform on build plate. Print peg with long axis (that goes through sphere) parallel to build plate.
 
+Preview surface and wireframe images are in this dir, along with openscad and stl files.
+
+![Preview](keyboard-support-sample-surface.png "Preview of Platform and Peg")
+
+
 ## TODO
 
 * print objects to test that wall thickness is good and doesn't break when inserting into void
