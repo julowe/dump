@@ -101,9 +101,9 @@ translate([0,0,0]){
 text_height = 1;
 
 rotate([0,180,0]){
-    translate([-quarter_tsp_radius*3/3/2,-quarter_tsp_radius*2/3/2, -(tsp_height + half_tsp_height + quarter_tsp_height - text_height)]){
+    translate([-quarter_tsp_radius*4/3/2,-quarter_tsp_radius*3/3/2, -(tsp_height + half_tsp_height + quarter_tsp_height - text_height)]){
         linear_extrude(height = text_height, center = true, convexity = 10){
-            resize([quarter_tsp_radius*3/3,quarter_tsp_radius*2/3,1]){
+            resize([quarter_tsp_radius*4/3,quarter_tsp_radius*3/3,1]){
                 text("1/4", size = 10);
             }
         }
@@ -112,9 +112,9 @@ rotate([0,180,0]){
 
 
 rotate([0,180,0]){
-    translate([-(half_tsp_radius - quarter_tsp_radius)*2/3/2, quarter_tsp_radius + (half_tsp_radius - quarter_tsp_radius - (half_tsp_radius - quarter_tsp_radius)*1/2)/2, -(tsp_height + half_tsp_height - text_height)]){
+    translate([-(half_tsp_radius - quarter_tsp_radius)*3/3/2, quarter_tsp_radius + (half_tsp_radius - quarter_tsp_radius - (half_tsp_radius - quarter_tsp_radius)*2/3)/2, -(tsp_height + half_tsp_height - text_height)]){
         linear_extrude(height = text_height, center = true, convexity = 10){
-            resize([(half_tsp_radius - quarter_tsp_radius)*2/3, (half_tsp_radius - quarter_tsp_radius)*1/2, 1]){
+            resize([(half_tsp_radius - quarter_tsp_radius)*3/3, (half_tsp_radius - quarter_tsp_radius)*2/3, 1]){
                 text("1/2", size = 10);
             }
         }
@@ -123,10 +123,10 @@ rotate([0,180,0]){
 
 
 rotate([0,180,0]){
-    translate([-(tsp_radius - half_tsp_radius)*3/3/2, half_tsp_radius + (tsp_radius - half_tsp_radius - (tsp_radius - half_tsp_radius)*2/3)/2, -(tsp_height - text_height)]){
+    translate([-(tsp_radius - half_tsp_radius)*4/3/2, half_tsp_radius + (tsp_radius - half_tsp_radius - (tsp_radius - half_tsp_radius)*2/3)/2, -(tsp_height - text_height)]){
         linear_extrude(height = text_height, center = true, convexity = 10){
-            resize([(tsp_radius - half_tsp_radius)*3/3, (tsp_radius - half_tsp_radius)*2/3, 1]){
-                text("tsp", size = 10);
+            resize([(tsp_radius - half_tsp_radius)*4/3, (tsp_radius - half_tsp_radius)*2/3, 1]){
+                text("TSP", size = 10);
             }
         }
     }
