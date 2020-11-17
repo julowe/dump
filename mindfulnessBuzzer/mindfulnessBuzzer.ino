@@ -5,26 +5,35 @@
 
 
 //TODO input method for tracking one stat (eg water tracker?)
-//TODO method to reset timers (for start of hour or start of activity)
+//TODO method to reset timers (for start of hour *or* start of activity)
 //TODO use millis() ? {Returns the number of milliseconds passed since the Arduino board began running the current program. This number will overflow (go back to zero), after approximately 50 days.}
+
+#include <Adafruit_SleepyDog.h>
 
 const uint32_t
   onTime   =  1 * 1000L, // Vibration motor run time, in seconds * 1000 to get milliseconds
-  interval = 6 * 1000L; // Time between reminders, in seconds * 1000 to get milliseconds
+  interval = 6 * 1000L, // Time between reminders, in seconds (and then * 1000 to get milliseconds)
+//  sleepTime = 1 * 60 * 1000L; // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
+  sleepTime = 15 * 60 * 1000L; // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
+  //TODO interval and sleeptime should be the same amount..
 
-const uint32_t offTime = interval - onTime; // Duration motor is off, ms
+//const uint32_t offTime = interval - onTime; // Duration motor is off, ms
 
 //using adafruit sleepydog library which does WDT (Watch Dog Timer) stuff for me
   // Set full power-down sleep mode and go to sleep.
   //  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
-uint16_t          maxSleepInterval;  // Actual ms in '8-ish sec' WDT interval
-volatile uint32_t sleepTime     = 1; // Total milliseconds remaining in sleep
-volatile uint16_t sleepInterval = 1; // ms to subtract in current WDT cycle
-volatile uint8_t  tablePos      = 0; // Index into WDT configuration table
 
-//JKL pin with resistor
-const int pinResistor = 10; //pin 10 for feather 32u4 breakout 
+volatile uint32_t sleepTimeRemaining = sleepTime;
+
+volatile uint16_t maxSleepMS = 7000; //feather 32u4 is 8000ms max sleep time, making this close.
+volatile bool intervalEnd = true; //start at true so we get a long (or 'top of the hour/round') buzz
+volatile int buzzCount = 0;
+
+//JKL pin with resistor to motor
+const int pinResistor = 10; //pin 10 for feather 32u4 breakout grid
+
+const bool debugSerialOutput = true;
 
 void setup() {
 
@@ -32,7 +41,9 @@ void setup() {
   // digitalWrite() to turn the LED on or off, the internal pull-up resistor
   // (about 10K) is enabled or disabled, dimly lighting the LED with much
   // less current.
-//  pinMode(pinResistor, INPUT);               // LED off to start
+//  pinMode(LEDpinResistor, INPUT);               // LED off to start
+
+
   pinMode(pinResistor, OUTPUT);
 
 
@@ -49,28 +60,153 @@ void setup() {
 //  DIDR0 = _BV(AIN1D) | _BV(AIN0D); // Digital input disable on analog pins
   // Timer 0 isn't disabled yet...it's needed for one thing first...
 
+//
+// new sketch
+//
+
+    // For boards with "native" USB support (e.g. not using an FTDI chip or
+  // similar serial bridge), Serial connection may be lost on sleep/wake,
+  // and you might not see the "I'm awake" messages. Use the onboard LED
+  // as an alternate indicator -- the code turns it on when awake, off
+  // before going to sleep.
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
+
+  if (debugSerialOutput) {
+    Serial.begin(115200);
+    while(!Serial); // wait for Arduino Serial Monitor (native USB boards)
+    Serial.println("Testing to see max sleep interval...");
+    Serial.println();
+    Serial.flush();
+    
+    delay(5000);
+    USBDevice.detach();
+  }
   
+  digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
+  //run sleep() with no input and save result as max sleep time interval
+  maxSleepMS = Watchdog.sleep();
+  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
+
+  if (debugSerialOutput) {
+    USBDevice.attach();
+    delay(5000); //serial print doesnt seem to work wihtout some delays
+    while(!Serial);
+    Serial.print("I'm awake now after initial sleep test! I slept for ");
+    Serial.print(maxSleepMS, DEC);
+    Serial.println(" milliseconds.");
+    Serial.println();
+    Serial.flush();
+    delay(1000);
+  }
+
 }
 
 
 
 void loop() {
 
-  buzz_double_soft_ramp_up_slower_fade();
+//  buzz_double_soft_ramp_up_slower_fade();
+//
+//  delay(1000L*60L*1L);
+//  
+//  buzz_soft_ramp_up_slower_fade();
+//
+//  delay(1000L*60L*1L);
+//  
+//  buzz_soft_ramp_up_slower_fade();
+//
+//  delay(1000L*60L*1L);
+//    
+//  buzz_soft_ramp_up_slower_fade();
+//
+//  delay(1000L*60L*1L);
 
-  delay(1000L*60L*1L);
+  if (intervalEnd) {
+    if (debugSerialOutput) {
+      Serial.flush();
+      delay(1000);
+      Serial.println("Sleep interval COMPLETED! Doing something and then going back to sleep.");
+      Serial.print("I've buzzed ");
+      Serial.print(buzzCount, DEC);
+      Serial.println(" times so far this go round.");
+      Serial.flush();
+      delay(5000);
+    }
+
+    //reset end of interval boolean
+    intervalEnd = false;
+
+    //reset sleep/reminder interval
+    sleepTimeRemaining = sleepTime;
+
+    //buzz long or short?
+    if (buzzCount == 0) { //long
+      buzzCount++;
+        buzz_double_soft_ramp_up_slower_fade();
   
-  buzz_soft_ramp_up_slower_fade();
+    } else { //short
+      buzzCount++;
+      buzz_soft_ramp_up_slower_fade();
+      if (buzzCount == 4) {
+        buzzCount = 0;
+      }
+    }
+  }
 
-  delay(1000L*60L*1L);
+  if (debugSerialOutput) {
+    Serial.println("Going to sleep in one second...");
+    Serial.flush();
+    delay(1000);
+    USBDevice.detach();
+  }
   
-  buzz_soft_ramp_up_slower_fade();
+  // To enter low power sleep mode call Watchdog.sleep() like below
+  // and the watchdog will allow low power sleep for as long as possible.
+  // The actual amount of time spent in sleep will be returned (in 
+  // milliseconds).
+  digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
 
-  delay(1000L*60L*1L);
+  
+  int sleepMS; //declare so can use later on in loop
+
+  //test time left to sleep against interval
+  if (sleepTimeRemaining > maxSleepMS) {
+    sleepMS = Watchdog.sleep(maxSleepMS);
+  } else {
+    intervalEnd = true; //fallback way to say overall sleep/reminder interval has elapsed
+    sleepMS = Watchdog.sleep(sleepTimeRemaining);
+  }
+
+
+  // Code resumes here on wake.
+
+  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake again
+
+  // subtract recent sleep interval from total sleep time
+  sleepTimeRemaining = sleepTimeRemaining - sleepMS;
+
+  if (debugSerialOutput) {
+    // Try to reattach USB connection on "native USB" boards (connection is
+    // lost on sleep). Host will also need to reattach to the Serial monitor.
+    // Seems not entirely reliable, hence the LED indicator fallback.
+//  #if defined(USBCON) && !defined(USE_TINYUSB)
+    USBDevice.attach();
+//  #endif
+
+    while(!Serial);
+    delay(5000);
+    Serial.print("I'm awake now! I slept for ");
+    Serial.print(sleepMS, DEC);
+    Serial.println(" milliseconds.");
+//    Serial.println();
     
-  buzz_soft_ramp_up_slower_fade();
-
-  delay(1000L*60L*1L);
+    Serial.print("I have ");
+    Serial.print(sleepTimeRemaining, DEC);
+    Serial.println(" milliseconds left to sleep.");
+    Serial.flush();
+    delay(1000);
+  }
 
   
 //  analogWrite(pinResistor, 0);
@@ -81,8 +217,10 @@ void loop() {
 
 }
 
+
+//TODO allow input to scale time length of buzz
 //custom buzz pattern
-void buzz_soft_ramp_up_slower_fade() {
+void buzz_soft_ramp_up_slower_fade() { //default 1000ms
   //soft ramp up and slower fade
   analogWrite(pinResistor, 100);
   delay(50);
@@ -107,7 +245,7 @@ void buzz_soft_ramp_up_slower_fade() {
 }
 
 //custom buzz pattern
-void buzz_double_soft_ramp_up_slower_fade() {
+void buzz_double_soft_ramp_up_slower_fade() { //default 2000ms
   //double peak soft ramp up and slower fade
   analogWrite(pinResistor, 100);
   delay(50);
