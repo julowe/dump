@@ -41,33 +41,7 @@ const bool
 
 
 void setup() {
-
-  // LED shenanigans.  Rather that setting pin 1 to an output and using
-  // digitalWrite() to turn the LED on or off, the internal pull-up resistor
-  // (about 10K) is enabled or disabled, dimly lighting the LED with much
-  // less current.
-//  pinMode(LEDpinResistor, INPUT);               // LED off to start
-
-
-
-//TODO figure out what we can shut off on feather 32u4 - or if adafruit sleepydog already does all that...
-
-  // AVR peripherals that are NEVER used by the sketch are disabled to save
-  // tiny bits of power.  Some have side-effects, don't do this willy-nilly.
-  // If using analogWrite() to for different motor levels, timer 0 and/or 1
-  // must be enabled -- for power efficiency they could be turned off in the
-  // ubersleep() function and re-enabled on wake.
-//  power_adc_disable();             // Knocks out analogRead()
-//  power_timer1_disable();          // May knock out analogWrite()
-//  power_usi_disable();             // Knocks out TinyWire library
-//  DIDR0 = _BV(AIN1D) | _BV(AIN0D); // Digital input disable on analog pins
-  // Timer 0 isn't disabled yet...it's needed for one thing first...
-
-//
-// new sketch
-//
-
-    // For boards with "native" USB support (e.g. not using an FTDI chip or
+  // For boards with "native" USB support (e.g. not using an FTDI chip or
   // similar serial bridge), Serial connection may be lost on sleep/wake,
   // and you might not see the "I'm awake" messages. Use the onboard LED
   // as an alternate indicator -- the code turns it on when awake, off
@@ -91,8 +65,10 @@ void setup() {
   }
   
   digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
+  
   //run sleep() with no input and save result as max sleep time interval
   maxSleepMS = Watchdog.sleep();
+  
   if (debugStatusLED) {
     digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
   }
@@ -110,11 +86,11 @@ void setup() {
     Serial.println(" milliseconds.");
     Serial.println();
     Serial.flush();
-//    delay(1000);
   }
   interrupted = false; //reset after first triggering
   buzz_double_soft_ramp_up_slower_fade(); //give us a nice buzz
 }
+
 
 void debounceInterrupt(){
   if((long)(micros() - last_micros) >= debouncing_time * 1000) {
@@ -122,6 +98,7 @@ void debounceInterrupt(){
     last_micros = micros();  // Remember when we did it
   }
 }
+
 
 void doInterrupt() {
   //interrupt will mess with saving output # of sleep function
@@ -160,10 +137,12 @@ void loop() {
       }
     }
 
-//TODO TODO TODO
-//
 
   if (hoursPassed > waterDrank) {
+    //TODO TODO TODO
+    //TODO TODO TODO
+    //TODO TODO TODO
+    //TODO TODO TODO
     //angry buzz if not drinking enough water
     Serial.println("DRINK MORE WATER!");
     delay(5000); //serial print doesnt seem to work wihtout some delays
@@ -174,7 +153,6 @@ void loop() {
   if (debugSerialOutput) {
     Serial.flush();
     delay(1000);
-//    Serial.println("Sleep interval COMPLETED! Doing something and then going back to sleep.");
     Serial.print("I've buzzed ");
     Serial.print(buzzCount, 0);
     Serial.println(" times so far this hour.");
@@ -195,15 +173,10 @@ void loop() {
     USBDevice.detach();
   }
   
-  // To enter low power sleep mode call Watchdog.sleep() like below
-  // and the watchdog will allow low power sleep for as long as possible.
-  // The actual amount of time spent in sleep will be returned (in 
-  // milliseconds).
   if (debugStatusLED) {
     digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
   }
 
-  
   float sleepMS; //declare so can use later on in loop
 
   //test time left to sleep against interval
@@ -241,22 +214,17 @@ void loop() {
     Serial.print("I'm awake now! I slept for ");
     Serial.print(sleepMS, 0);
     Serial.println(" milliseconds.");
-//    Serial.println();
     
     Serial.print("I have ");
     Serial.print(sleepTimeRemaining, 0);
     Serial.println(" milliseconds left to sleep.");
 
-//prob not here but for testing
     Serial.print("and drank ");
     Serial.print(waterDrank, 0);
     Serial.println(" glasses.");
     if (interrupted) {
-//      USBDevice.attach();
-//      delay(5000); //serial print doesnt seem to work wihtout some delays
-//      while(!Serial);
       Serial.println("Interrupt Button Pressed");
-      delay(5000); //serial print doesnt seem to work wihtout some delays
+      delay(5000); //serial print doesnt seem to work without some delays
     }
     
     Serial.flush();
@@ -268,15 +236,13 @@ void loop() {
     //anything else to do after an interrupt?
   }
 
-  
-//  analogWrite(pinResistor, 0);
-//  delay(offTime);
-
-  //JKL comment out to keep awake
-//  ubersleep(offTime);       // Delay while off
-
 }
 
+//
+//
+// BUZZ FUNCTIONS AND PATTERNS
+//
+//
 
 //TODO allow input to scale time length of buzz
 //custom buzz pattern
