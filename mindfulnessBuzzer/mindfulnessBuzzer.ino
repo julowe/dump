@@ -33,6 +33,15 @@ volatile int buzzCount = 0;
 //JKL pin with resistor to motor
 const int pinResistor = 10; //pin 10 for feather 32u4 breakout grid
 
+long debouncing_time = 1000; //Debouncing Time in Milliseconds
+// Hold what time it is....
+volatile unsigned long last_micros;
+volatile int water = -1; //bite me
+ 
+// Setup the Pins to use.
+const byte interruptPin = 3;  //Adalogger uses Pin3 for INT0
+
+volatile bool interrupted = false;
 const bool debugSerialOutput = true;
 
 void setup() {
@@ -43,8 +52,6 @@ void setup() {
   // less current.
 //  pinMode(LEDpinResistor, INPUT);               // LED off to start
 
-
-  pinMode(pinResistor, OUTPUT);
 
 
 //TODO figure out what we can shut off on feather 32u4 - or if adafruit sleepydog already does all that...
@@ -69,8 +76,12 @@ void setup() {
   // and you might not see the "I'm awake" messages. Use the onboard LED
   // as an alternate indicator -- the code turns it on when awake, off
   // before going to sleep.
+  
+  pinMode(pinResistor, OUTPUT); //for vibrate motor
+
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
+  pinMode(interruptPin, INPUT_PULLUP);   // enable the Pull up resistor for interrupt button pin
 
   if (debugSerialOutput) {
     Serial.begin(115200);
@@ -88,21 +99,36 @@ void setup() {
   maxSleepMS = Watchdog.sleep();
   digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
 
+  //attach an interrupt to a PIN
+  attachInterrupt(digitalPinToInterrupt(interruptPin), debounceInterrupt, RISING);
+
   if (debugSerialOutput) {
     USBDevice.attach();
     delay(5000); //serial print doesnt seem to work wihtout some delays
     while(!Serial);
+    Serial.flush();
     Serial.print("I'm awake now after initial sleep test! I slept for ");
     Serial.print(maxSleepMS, DEC);
     Serial.println(" milliseconds.");
     Serial.println();
     Serial.flush();
-    delay(1000);
+//    delay(1000);
   }
-
+  interrupted = false; //reset after first triggering
 }
 
+void debounceInterrupt(){
+  if((long)(micros() - last_micros) >= debouncing_time * 1000) {
+    doInterrupt();           // do the Work
+    last_micros = micros();  // Remember when we did it
+  }
+}
 
+void doInterrupt() {
+  //interrupt will mess with saving output # of sleep function
+  interrupted = true;
+  water++;
+}
 
 void loop() {
 
@@ -152,6 +178,13 @@ void loop() {
         buzzCount = 0;
       }
     }
+
+//TODO TODO TODO
+//
+
+    //angry buzz if not drinking enough water
+    //if cups water < hours elapsed 
+       //then angry buzz (Every 15 minutes)
   }
 
   if (debugSerialOutput) {
@@ -179,9 +212,23 @@ void loop() {
   }
 
 
+  //
   // Code resumes here on wake.
+  //
 
   digitalWrite(LED_BUILTIN, HIGH); // Show we're awake again
+
+  if (interrupted) {
+    if (debugSerialOutput) {
+      USBDevice.attach();
+      delay(5000); //serial print doesnt seem to work wihtout some delays
+      while(!Serial);
+      Serial.println("Interrupt Button Pressed");
+      Serial.flush();
+      delay(5000); //serial print doesnt seem to work wihtout some delays
+    }
+    interrupted = false;
+  }
 
   // subtract recent sleep interval from total sleep time
   sleepTimeRemaining = sleepTimeRemaining - sleepMS;
@@ -204,6 +251,13 @@ void loop() {
     Serial.print("I have ");
     Serial.print(sleepTimeRemaining, DEC);
     Serial.println(" milliseconds left to sleep.");
+
+//prob not here but for testing
+    Serial.print("and drank ");
+    Serial.print(water, DEC);
+    Serial.println(" glasses.");
+
+    
     Serial.flush();
     delay(1000);
   }
