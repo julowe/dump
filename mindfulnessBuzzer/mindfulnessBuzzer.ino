@@ -4,45 +4,41 @@
 //different buzz patterns at end of sketch as comments
 
 
-//TODO input method for tracking one stat (eg water tracker?)
+
 //TODO method to reset timers (for start of hour *or* start of activity)
 //TODO use millis() ? {Returns the number of milliseconds passed since the Arduino board began running the current program. This number will overflow (go back to zero), after approximately 50 days.}
 
 #include <Adafruit_SleepyDog.h>
 
-const uint32_t
-  onTime   =  1 * 1000L, // Vibration motor run time, in seconds * 1000 to get milliseconds
-  interval = 6 * 1000L, // Time between reminders, in seconds (and then * 1000 to get milliseconds)
-//  sleepTime = 1 * 60 * 1000L; // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
-  sleepTime = 15 * 60 * 1000L; // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
-  //TODO interval and sleeptime should be the same amount..
 
-//const uint32_t offTime = interval - onTime; // Duration motor is off, ms
+const int 
+  pinResistor = 10, //pin 10 for feather 32u4 breakout grid with resistor to motor
+  interruptPin = 3;  //Adalogger uses Pin3 for INT0
+  
+const float
+  debouncing_time = 1000, //Debouncing Time in Milliseconds
+  sleepTimeMins = 1, //just for less math later
+  sleepTime = sleepTimeMins * 60 * 1000L; // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
 
-//using adafruit sleepydog library which does WDT (Watch Dog Timer) stuff for me
-  // Set full power-down sleep mode and go to sleep.
-  //  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+//yeah, lazy casts
+volatile float 
+  sleepTimeRemaining = sleepTime,
+  maxSleepMS = 7000, //feather 32u4 is 8000ms max sleep time, making this close.
+  last_micros, // Hold what time it is....
+  hoursPassed = 0,
+  buzzCount = 0,
+  waterDrank = -1; //bite me
+  
+volatile bool
+  intervalEnd = false,
+  interrupted = false;
 
 
-volatile uint32_t sleepTimeRemaining = sleepTime;
+//Debugging options here
+const bool 
+  debugSerialOutput = true,
+  debugStatusLED = true;
 
-volatile uint16_t maxSleepMS = 7000; //feather 32u4 is 8000ms max sleep time, making this close.
-volatile bool intervalEnd = true; //start at true so we get a long (or 'top of the hour/round') buzz
-volatile int buzzCount = 0;
-
-//JKL pin with resistor to motor
-const int pinResistor = 10; //pin 10 for feather 32u4 breakout grid
-
-long debouncing_time = 1000; //Debouncing Time in Milliseconds
-// Hold what time it is....
-volatile unsigned long last_micros;
-volatile int water = -1; //bite me
- 
-// Setup the Pins to use.
-const byte interruptPin = 3;  //Adalogger uses Pin3 for INT0
-
-volatile bool interrupted = false;
-const bool debugSerialOutput = true;
 
 void setup() {
 
@@ -80,7 +76,7 @@ void setup() {
   pinMode(pinResistor, OUTPUT); //for vibrate motor
 
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
+  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake [also that we have yet to fall through the while(!Serial)]
   pinMode(interruptPin, INPUT_PULLUP);   // enable the Pull up resistor for interrupt button pin
 
   if (debugSerialOutput) {
@@ -97,7 +93,9 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
   //run sleep() with no input and save result as max sleep time interval
   maxSleepMS = Watchdog.sleep();
-  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
+  if (debugStatusLED) {
+    digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
+  }
 
   //attach an interrupt to a PIN
   attachInterrupt(digitalPinToInterrupt(interruptPin), debounceInterrupt, RISING);
@@ -108,13 +106,14 @@ void setup() {
     while(!Serial);
     Serial.flush();
     Serial.print("I'm awake now after initial sleep test! I slept for ");
-    Serial.print(maxSleepMS, DEC);
+    Serial.print(maxSleepMS, 0);
     Serial.println(" milliseconds.");
     Serial.println();
     Serial.flush();
 //    delay(1000);
   }
   interrupted = false; //reset after first triggering
+  buzz_double_soft_ramp_up_slower_fade(); //give us a nice buzz
 }
 
 void debounceInterrupt(){
@@ -127,44 +126,26 @@ void debounceInterrupt(){
 void doInterrupt() {
   //interrupt will mess with saving output # of sleep function
   interrupted = true;
-  water++;
+  waterDrank++;
 }
+
+
+//
+// MAIN LOOP
+//
 
 void loop() {
 
-//  buzz_double_soft_ramp_up_slower_fade();
-//
-//  delay(1000L*60L*1L);
-//  
-//  buzz_soft_ramp_up_slower_fade();
-//
-//  delay(1000L*60L*1L);
-//  
-//  buzz_soft_ramp_up_slower_fade();
-//
-//  delay(1000L*60L*1L);
-//    
-//  buzz_soft_ramp_up_slower_fade();
-//
-//  delay(1000L*60L*1L);
-
   if (intervalEnd) {
-    if (debugSerialOutput) {
-      Serial.flush();
-      delay(1000);
-      Serial.println("Sleep interval COMPLETED! Doing something and then going back to sleep.");
-      Serial.print("I've buzzed ");
-      Serial.print(buzzCount, DEC);
-      Serial.println(" times so far this go round.");
-      Serial.flush();
-      delay(5000);
-    }
 
     //reset end of interval boolean
     intervalEnd = false;
 
     //reset sleep/reminder interval
     sleepTimeRemaining = sleepTime;
+
+    //add time passed to hours passed
+    hoursPassed = hoursPassed +  sleepTimeMins/60; //divide by 60 to get decimal part of hours elapsed in one interval
 
     //buzz long or short?
     if (buzzCount == 0) { //long
@@ -174,7 +155,7 @@ void loop() {
     } else { //short
       buzzCount++;
       buzz_soft_ramp_up_slower_fade();
-      if (buzzCount == 4) {
+      if (buzzCount >= 60/sleepTimeMins) { //change '4' to (60/sleepTimeMins) ? ehhh but then if you pick a value that doesnt divide 60 you get some weird results. of just make all vars floats...
         buzzCount = 0;
       }
     }
@@ -182,10 +163,30 @@ void loop() {
 //TODO TODO TODO
 //
 
+  if (hoursPassed > waterDrank) {
     //angry buzz if not drinking enough water
-    //if cups water < hours elapsed 
-       //then angry buzz (Every 15 minutes)
+    Serial.println("DRINK MORE WATER!");
+    delay(5000); //serial print doesnt seem to work wihtout some delays
+    Serial.flush();
   }
+
+  
+  if (debugSerialOutput) {
+    Serial.flush();
+    delay(1000);
+//    Serial.println("Sleep interval COMPLETED! Doing something and then going back to sleep.");
+    Serial.print("I've buzzed ");
+    Serial.print(buzzCount, 0);
+    Serial.println(" times so far this hour.");
+    Serial.print("And ");
+    Serial.print(hoursPassed, 0);
+    Serial.println(" hours have passed since last reset.");
+    Serial.flush();
+    delay(5000);
+  }
+
+} //end of "intervalEnd" if statement
+  
 
   if (debugSerialOutput) {
     Serial.println("Going to sleep in one second...");
@@ -198,10 +199,12 @@ void loop() {
   // and the watchdog will allow low power sleep for as long as possible.
   // The actual amount of time spent in sleep will be returned (in 
   // milliseconds).
-  digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
+  if (debugStatusLED) {
+    digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
+  }
 
   
-  int sleepMS; //declare so can use later on in loop
+  float sleepMS; //declare so can use later on in loop
 
   //test time left to sleep against interval
   if (sleepTimeRemaining > maxSleepMS) {
@@ -216,19 +219,11 @@ void loop() {
   // Code resumes here on wake.
   //
 
-  digitalWrite(LED_BUILTIN, HIGH); // Show we're awake again
-
-  if (interrupted) {
-    if (debugSerialOutput) {
-      USBDevice.attach();
-      delay(5000); //serial print doesnt seem to work wihtout some delays
-      while(!Serial);
-      Serial.println("Interrupt Button Pressed");
-      Serial.flush();
-      delay(5000); //serial print doesnt seem to work wihtout some delays
-    }
-    interrupted = false;
+  if (debugStatusLED) {
+    digitalWrite(LED_BUILTIN, HIGH); // Show we're awake again
   }
+
+
 
   // subtract recent sleep interval from total sleep time
   sleepTimeRemaining = sleepTimeRemaining - sleepMS;
@@ -237,29 +232,40 @@ void loop() {
     // Try to reattach USB connection on "native USB" boards (connection is
     // lost on sleep). Host will also need to reattach to the Serial monitor.
     // Seems not entirely reliable, hence the LED indicator fallback.
-//  #if defined(USBCON) && !defined(USE_TINYUSB)
-    USBDevice.attach();
-//  #endif
+    #if defined(USBCON) && !defined(USE_TINYUSB)
+      USBDevice.attach();
+    #endif
 
     while(!Serial);
     delay(5000);
     Serial.print("I'm awake now! I slept for ");
-    Serial.print(sleepMS, DEC);
+    Serial.print(sleepMS, 0);
     Serial.println(" milliseconds.");
 //    Serial.println();
     
     Serial.print("I have ");
-    Serial.print(sleepTimeRemaining, DEC);
+    Serial.print(sleepTimeRemaining, 0);
     Serial.println(" milliseconds left to sleep.");
 
 //prob not here but for testing
     Serial.print("and drank ");
-    Serial.print(water, DEC);
+    Serial.print(waterDrank, 0);
     Serial.println(" glasses.");
-
+    if (interrupted) {
+//      USBDevice.attach();
+//      delay(5000); //serial print doesnt seem to work wihtout some delays
+//      while(!Serial);
+      Serial.println("Interrupt Button Pressed");
+      delay(5000); //serial print doesnt seem to work wihtout some delays
+    }
     
     Serial.flush();
     delay(1000);
+  }
+
+  if (interrupted) {
+    interrupted = false;
+    //anything else to do after an interrupt?
   }
 
   
