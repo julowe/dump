@@ -2,7 +2,7 @@
 //20200529
 
 //different buzz patterns at end of sketch as comments
-
+//using interrupt as here https://tholken.wordpress.com/tag/feather-32u4/
 
 
 //TODO method to reset timers (for start of hour *or* start of activity)
@@ -10,15 +10,20 @@
 
 #include <Adafruit_SleepyDog.h>
 
+#define VBATPIN A9
+   
+
 
 const int 
   pinResistor = 10, //pin 10 for feather 32u4 breakout grid with resistor to motor
-  interruptPin = 3;  //Adalogger uses Pin3 for INT0
+  interruptPin = 2;  //Adalogger uses Pin3 for INT0
   
 const float
   debouncing_time = 1000, //Debouncing Time in Milliseconds
-  sleepTimeMins = 1, //just for less math later
-  sleepTime = sleepTimeMins * 60 * 1000L; // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
+//  sleepTimeMins = 1, //just for less math later
+  sleepTimeMins = 15, //just for less math later
+  sleepTime = sleepTimeMins * 60 * 1000L, // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
+  lowBatteryLevel = 3.6;
 
 //yeah, lazy casts
 volatile float 
@@ -36,8 +41,8 @@ volatile bool
 
 //Debugging options here
 const bool 
-  debugSerialOutput = true,
-  debugStatusLED = true;
+  debugSerialOutput = false,
+  debugStatusLED = false; //led on without serial write will have the led illuminate dimly for the briefest of intervals. hard to see but there.
 
 
 void setup() {
@@ -139,14 +144,13 @@ void loop() {
 
 
   if (hoursPassed > waterDrank) {
-    //TODO TODO TODO
-    //TODO TODO TODO
-    //TODO TODO TODO
-    //TODO TODO TODO
     //angry buzz if not drinking enough water
-    Serial.println("DRINK MORE WATER!");
-    delay(5000); //serial print doesnt seem to work wihtout some delays
-    Serial.flush();
+    buzz_angry();
+    if (debugSerialOutput) {
+      Serial.println("DRINK MORE WATER!");
+      delay(5000); //serial print doesnt seem to work wihtout some delays
+      Serial.flush();
+    }
   }
 
   
@@ -201,6 +205,15 @@ void loop() {
   // subtract recent sleep interval from total sleep time
   sleepTimeRemaining = sleepTimeRemaining - sleepMS;
 
+  float measuredvbat = analogRead(VBATPIN);
+  measuredvbat *= 2;    // we divided by 2, so multiply back
+  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
+  measuredvbat /= 1024; // convert to voltage
+
+  if (measuredvbat <= lowBatteryLevel) {
+    digitalWrite(LED_BUILTIN, HIGH); //turn on LED to show low battery level
+  }
+
   if (debugSerialOutput) {
     // Try to reattach USB connection on "native USB" boards (connection is
     // lost on sleep). Host will also need to reattach to the Serial monitor.
@@ -214,6 +227,9 @@ void loop() {
     Serial.print("I'm awake now! I slept for ");
     Serial.print(sleepMS, 0);
     Serial.println(" milliseconds.");
+
+    Serial.print("VBat: " ); 
+    Serial.println(measuredvbat);
     
     Serial.print("I have ");
     Serial.print(sleepTimeRemaining, 0);
@@ -245,6 +261,32 @@ void loop() {
 //
 
 //TODO allow input to scale time length of buzz
+
+//custom buzz pattern
+void buzz_angry() {
+  //sharp buzzes
+  analogWrite(pinResistor, 255);
+  delay(150);
+  analogWrite(pinResistor, 0);
+  delay(150);
+  analogWrite(pinResistor, 255);
+  delay(500);
+  analogWrite(pinResistor, 0);
+  delay(100);
+  analogWrite(pinResistor, 255);
+  delay(500);
+  analogWrite(pinResistor, 0);
+  delay(100);  
+  analogWrite(pinResistor, 255);
+  delay(500);
+  analogWrite(pinResistor, 0);
+  delay(150);
+  analogWrite(pinResistor, 255);
+  delay(150);
+  analogWrite(pinResistor, 0);
+}
+
+
 //custom buzz pattern
 void buzz_soft_ramp_up_slower_fade() { //default 1000ms
   //soft ramp up and slower fade
