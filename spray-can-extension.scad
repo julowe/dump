@@ -19,6 +19,9 @@
 
 //TODO take actual measurements!
 
+//TODO D'oh bottle is upside down to spray. rotate can holder positive Y so there is good clearance to apply under eaves (maybe not too possible). rotate backbone as well (with a larger X value) and use 2nd cube (unrotated) to difference and make a vertical broom side
+//TODO make hole in bottom of platform and tube to allow can to rest in it and be supported. ugh this may be more work than worth it.
+
 draftFNs = 36;
 renderFNs = 180;
 $fn = draftFNs;
@@ -63,7 +66,18 @@ difference(){
     translate([0,0,canHolderPlatformHeight]){     
         cylinder(canHolderWallHeight, canDiameter/2, canDiameter/2);
     }
+    //cube to cut out tube and spray attachemnt part
+    translate([-canDiameter,-canDiameter/4,0]){
+        cube([canDiameter,canDiameter/2,canHolderWallHeight+canHolderPlatformHeight]);
+    }
+    //cylinder to cut out what nozzel attaches to
+    translate([0,0,0]){
+        cylinder(canHolderWallHeight+canHolderPlatformHeight,20,20);
+    }
 }
+
+
+
 
 //main backbone connecting all various holders
 translate([canDiameter/2,-holderBackboneWidth/2,0]){
