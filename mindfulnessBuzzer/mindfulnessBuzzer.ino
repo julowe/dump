@@ -23,7 +23,7 @@ const float
 //  sleepTimeMins = 1, //just for less math later
   sleepTimeMins = 15, //just for less math later
   sleepTime = sleepTimeMins * 60 * 1000L, // Total milliseconds remaining in sleep (minutes * 60 seconds * 1000ms)
-  lowBatteryLevel = 3.6;
+  lowBatteryLevel = 3.7;
 
 //yeah, lazy casts
 volatile float 
