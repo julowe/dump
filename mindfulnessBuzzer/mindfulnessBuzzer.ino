@@ -250,6 +250,38 @@ void loop() {
   if (interrupted) {
     interrupted = false;
     //anything else to do after an interrupt?
+
+    //save light state (if battery low or other future uses?)
+    int stateLED = digitalRead(LED_BUILTIN);
+    
+    //flash number of times for glasses drank - waterDrank
+    for (int i = 1; i <= waterDrank; i++) {
+      digitalWrite(LED_BUILTIN, HIGH); //turn on LED for glass drank
+      delay(500); //leave on for 500ms
+      digitalWrite(LED_BUILTIN, LOW); //turn off LED
+      delay(250); //leave off for 500ms
+    }
+
+    //pause
+    delay(1500); //flash break for x ms
+
+    //flash for hours passed - hoursPassed
+    float TEMPhoursPassed = 1;
+    if (hoursPassed > 1) {
+      TEMPhoursPassed = hoursPassed;
+    }
+    for (int i = 1; i <= TEMPhoursPassed; i++) {
+      digitalWrite(LED_BUILTIN, HIGH); //turn on LED for hour passed
+      delay(500); //leave on for 500ms
+      digitalWrite(LED_BUILTIN, LOW); //turn off LED
+      delay(250); //leave off for 500ms
+    }
+    
+    //pause
+    delay(2000); //flash break for x ms
+
+    //return to previous LED state
+    digitalWrite(LED_BUILTIN, stateLED);
   }
 
 }
