@@ -16,13 +16,15 @@ voidMedianRadius = voidMedianDiameter/2;
 voidBottomWall = 3; //how much material to have under the void
 voidHorizontalDistance = 5; //how much space between holes - ugh set this large enough to deal with incrementing hole size (because I dont want to deal with varying translation size)
 voidHorizontalWall = 3; //space between wall and edge of cube
-voidVerticalPadding = 0.5; //how much higher to make hole than the insert's height
+voidVerticalPadding = 2; //how much higher to make hole than the insert's height - hmm see things online suggesting up to 50% of insert height
+voidVerticalRadiusTaper = 0.1; //have bottom of void be this much smaller in raidu (uniformly for all voids)
 
 voidsBracketingNumber = 2; //how many test holes to make on the plus & minus size of starting hole
 radiusIncrement = 0.1;
 
 difference(){
     union(){
+        //cube for voids to be subtracted from
         translate([0,0,(insertHeight+voidVerticalPadding+voidBottomWall)/2]){
             cube([voidHorizontalWall+insertDiameter+(2*voidsBracketingNumber*insertDiameter)+(2*voidsBracketingNumber*radiusIncrement*2)+(2*voidsBracketingNumber*voidHorizontalDistance)+voidHorizontalWall,voidHorizontalWall+(insertDiameter+(voidsBracketingNumber*radiusIncrement))+voidHorizontalWall,insertHeight+voidVerticalPadding+voidBottomWall],true);
         }
@@ -33,17 +35,18 @@ difference(){
         }
     }
 
+    //make voids
     for (i=[0:voidsBracketingNumber]){
         translate([i*voidHorizontalDistance+i*voidMedianRadius*2+(i*radiusIncrement*2),0,voidBottomWall]){
-            cylinder(insertHeight+voidVerticalPadding,voidMedianRadius+(i*radiusIncrement),voidMedianRadius+(i*radiusIncrement));
+            cylinder(insertHeight+voidVerticalPadding,voidMedianRadius+(i*radiusIncrement)-voidVerticalRadiusTaper,voidMedianRadius+(i*radiusIncrement));
         }
         
 
 
-        //also create negative hole if not central starting hole
+        //also create negative bracketing voids (if not the central starting hole)
         if (i > 0){ 
             translate([-i*voidHorizontalDistance-i*voidMedianRadius*2+(-i*radiusIncrement*2),0,voidBottomWall]){
-                cylinder(insertHeight+voidVerticalPadding,voidMedianRadius+(-i*radiusIncrement),voidMedianRadius+(-i*radiusIncrement));
+                cylinder(insertHeight+voidVerticalPadding,voidMedianRadius+(-i*radiusIncrement)-voidVerticalRadiusTaper,voidMedianRadius+(-i*radiusIncrement));
             }
         }
     }
