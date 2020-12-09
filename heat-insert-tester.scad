@@ -22,6 +22,10 @@ voidVerticalRadiusTaper = 0.1; //have bottom of void be this much smaller in rai
 voidsBracketingNumber = 2; //how many test holes to make on the plus & minus size of starting hole
 radiusIncrement = 0.1;
 
+screwHoles = true;
+screwHoleDiameter = 3.5; //m3 = 3mm diameter
+screwRadius = screwHoleDiameter/2;
+
 difference(){
     union(){
         //cube for voids to be subtracted from
@@ -39,6 +43,11 @@ difference(){
     for (i=[0:voidsBracketingNumber]){
         translate([i*voidHorizontalDistance+i*voidMedianRadius*2+(i*radiusIncrement*2),0,voidBottomWall]){
             cylinder(insertHeight+voidVerticalPadding,voidMedianRadius+(i*radiusIncrement)-voidVerticalRadiusTaper,voidMedianRadius+(i*radiusIncrement));
+            if (screwHoles){
+                translate([0,0,-voidBottomWall]){
+                    cylinder(voidBottomWall,screwRadius,screwRadius);
+                }
+            }
         }
         
 
@@ -47,6 +56,11 @@ difference(){
         if (i > 0){ 
             translate([-i*voidHorizontalDistance-i*voidMedianRadius*2+(-i*radiusIncrement*2),0,voidBottomWall]){
                 cylinder(insertHeight+voidVerticalPadding,voidMedianRadius+(-i*radiusIncrement)-voidVerticalRadiusTaper,voidMedianRadius+(-i*radiusIncrement));
+                if (screwHoles){
+                    translate([0,0,-voidBottomWall]){
+                        cylinder(voidBottomWall,screwRadius,screwRadius);
+                    }
+                }
             }
         }
     }
