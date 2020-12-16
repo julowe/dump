@@ -11,13 +11,13 @@
 #include <Adafruit_SleepyDog.h>
 
 #define VBATPIN A9
-   
 
 
-const int 
+
+const int
   pinResistor = 10, //pin 10 for feather 32u4 breakout grid with resistor to motor
   interruptPin = 2;  //Adalogger uses Pin3 for INT0
-  
+
 const float
   debouncing_time = 1000, //Debouncing Time in Milliseconds
 //  sleepTimeMins = 1, //just for less math later
@@ -26,7 +26,7 @@ const float
   lowBatteryLevel = 3.7;
 
 //yeah, lazy casts
-volatile float 
+volatile float
   sleepTimeRemaining = sleepTime,
   maxSleepMS = 7000, //feather 32u4 is 8000ms max sleep time, making this close.
   last_micros, // Hold what time it is....
@@ -41,7 +41,7 @@ volatile bool
 
 
 //Debugging options here
-const bool 
+const bool
   debugSerialOutput = false,
   debugStatusLED = false; //led on without serial write will have the led illuminate dimly for the briefest of intervals. hard to see but there.
 
@@ -52,7 +52,7 @@ void setup() {
   // and you might not see the "I'm awake" messages. Use the onboard LED
   // as an alternate indicator -- the code turns it on when awake, off
   // before going to sleep.
-  
+
   pinMode(pinResistor, OUTPUT); //for vibrate motor
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -65,16 +65,16 @@ void setup() {
     Serial.println("Testing to see max sleep interval...");
     Serial.println();
     Serial.flush();
-    
+
     delay(5000);
     USBDevice.detach();
   }
-  
+
   digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
-  
+
   //run sleep() with no input and save result as max sleep time interval
   maxSleepMS = Watchdog.sleep();
-  
+
   if (debugStatusLED) {
     digitalWrite(LED_BUILTIN, HIGH); // Show we're awake
   }
@@ -134,7 +134,7 @@ void loop() {
     if (buzzCount == 0) { //long
       buzzCount++;
         buzz_double_soft_ramp_up_slower_fade();
-  
+
     } else { //short
       buzzCount++;
       buzz_soft_ramp_up_slower_fade();
@@ -154,7 +154,7 @@ void loop() {
     }
   }
 
-  
+
   if (debugSerialOutput) {
     Serial.flush();
     delay(1000);
@@ -169,7 +169,7 @@ void loop() {
   }
 
 } //end of "intervalEnd" if statement
-  
+
 
   if (debugSerialOutput) {
     Serial.println("Going to sleep in one second...");
@@ -177,7 +177,7 @@ void loop() {
     delay(1000);
     USBDevice.detach();
   }
-  
+
   if (debugStatusLED) {
     digitalWrite(LED_BUILTIN, LOW); // Show we're asleep
   }
@@ -229,9 +229,9 @@ void loop() {
     Serial.print(sleepMS, 0);
     Serial.println(" milliseconds.");
 
-    Serial.print("VBat: " ); 
+    Serial.print("VBat: " );
     Serial.println(measuredvbat);
-    
+
     Serial.print("I have ");
     Serial.print(sleepTimeRemaining, 0);
     Serial.println(" milliseconds left to sleep.");
@@ -243,7 +243,7 @@ void loop() {
       Serial.println("Interrupt Button Pressed");
       delay(5000); //serial print doesnt seem to work without some delays
     }
-    
+
     Serial.flush();
     delay(1000);
   }
@@ -277,9 +277,9 @@ void loop() {
       digitalWrite(LED_BUILTIN, HIGH); //turn on LED for hour passed
       delay(500); //leave on for 500ms
       digitalWrite(LED_BUILTIN, LOW); //turn off LED
-      delay(250); //leave off for 500ms
+      delay(250); //leave off for 250ms
     }
-    
+
     //pause
     delay(2000); //flash break for x ms
 
@@ -311,7 +311,7 @@ void buzz_angry() {
   analogWrite(pinResistor, 255);
   delay(500);
   analogWrite(pinResistor, 0);
-  delay(100);  
+  delay(100);
   analogWrite(pinResistor, 255);
   delay(500);
   analogWrite(pinResistor, 0);
@@ -344,7 +344,7 @@ void buzz_soft_ramp_up_slower_fade() { //default 1000ms
   analogWrite(pinResistor, 100);
   delay(100);
   analogWrite(pinResistor, 0);
-  delay(500); 
+  delay(500);
 }
 
 //custom buzz pattern
@@ -493,7 +493,7 @@ void buzz_double_soft_ramp_up_slower_fade() { //default 2000ms
 //  delay(50);
 //  analogWrite(pinResistor, 0);
 //  delay(500);
-//  
+//
 //  //stronger ramp up and slower fade
 //  analogWrite(pinResistor, 100);
 //  delay(50);
