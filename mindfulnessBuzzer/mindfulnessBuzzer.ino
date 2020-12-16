@@ -32,8 +32,9 @@ volatile float
   last_micros, // Hold what time it is....
   hoursPassed = 0,
   buzzCount = 0,
-  waterDrank = -1; //bite me
-  
+//  waterDrank = -1; //bite me FIXME why is this -1??? left over from previous weird coding loop?
+  waterDrank = 0; 
+
 volatile bool
   intervalEnd = false,
   interrupted = false;
@@ -253,6 +254,8 @@ void loop() {
 
     //save light state (if battery low or other future uses?)
     int stateLED = digitalRead(LED_BUILTIN);
+    digitalWrite(LED_BUILTIN, LOW); //turn off LED for a visual break in case light already on (low battery)
+    delay(250); //leave off for 250ms      
     
     //flash number of times for glasses drank - waterDrank
     for (int i = 1; i <= waterDrank; i++) {
@@ -263,7 +266,7 @@ void loop() {
     }
 
     //pause
-    delay(1500); //flash break for x ms
+    delay(1000); //flash break for x ms
 
     //flash for hours passed - hoursPassed
     float TEMPhoursPassed = 1;
