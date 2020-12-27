@@ -211,8 +211,11 @@ void loop() {
   measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
   measuredvbat /= 1024; // convert to voltage
 
+  //this will only work for now, when using light for just one thing during normal usage. ie problem for future me
   if (measuredvbat <= lowBatteryLevel) {
     digitalWrite(LED_BUILTIN, HIGH); //turn on LED to show low battery level
+  } else {
+    digitalWrite(LED_BUILTIN, LOW); //turn on LED to show low battery level
   }
 
   if (debugSerialOutput) {
