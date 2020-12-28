@@ -200,26 +200,27 @@ caseMinkRad = 3;
 //mink cube as base
 
 
+sliderX = 2;
 module caseSlidingCap(capTolerance){
     //part that goes into channel
     union(){
         //bottom
         translate([0,0,-caseMinkRad]){
-            cube([caseMinkRad,caseY,caseZ]); //TODO: have Z here be an additional caseMinkRad/2 or just 0? butt up against case, it slide into top part?
+            cube([sliderX,caseY,caseZ]); //TODO: have Z here be an additional caseMinkRad/2 or just 0? butt up against case, it slide into top part?
         }
         
         //sides
         translate([0,-caseMinkRad,0]){
-            cube([caseMinkRad,caseY + caseMinkRad + caseMinkRad,caseZ ]);
+            cube([sliderX,caseY + caseMinkRad + caseMinkRad,caseZ ]);
         }
         
         rotate([90,0,90]){
-            cylinder(caseMinkRad,caseMinkRad,caseMinkRad);
+            cylinder(sliderX,caseMinkRad,caseMinkRad);
         }    
     
         translate([0,caseY,0]){    
             rotate([90,0,90]){
-                cylinder(caseMinkRad,caseMinkRad,caseMinkRad);
+                cylinder(sliderX,caseMinkRad,caseMinkRad);
             }
         }
     } //end union
@@ -228,10 +229,17 @@ module caseSlidingCap(capTolerance){
     
     //part that forms end cap
     //TODO make minkowski and then difference off left top right sides - so bottom has curve... which could just be a quarter cylinder at that point...
-    translate([caseMinkRad,0,0]){
+    translate([sliderX,0,0]){
         cube([caseMinkRad,caseY,caseZ]);
-        rotate([-90,0,0]){
-            cylinder(caseY,caseMinkRad,caseMinkRad);
+        difference(){
+            rotate([-90,0,0]){
+                cylinder(caseY,caseMinkRad,caseMinkRad);
+            }
+            
+            //bottom
+            translate([-caseMinkRad,0,-caseMinkRad]){
+                cube([caseMinkRad,caseY,caseZ]);
+            }
         }
     }
        
