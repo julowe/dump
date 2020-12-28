@@ -19,18 +19,7 @@ $fn = draftingFNs;
 printTolerance = 0.2;
 
 
-caseX = 55;
-caseY = 30;
-caseZ = 15; 
-caseMinkRad = 3;
-//mink cube as base
 
-module case(){
-minkowski(){
-    cube([caseX,caseY,caseZ]);
-    sphere(caseMinkRad);
-}
-}
 
 
 trayHeight = 4; //TODO do we want to make edge that goes into slot thinner?
@@ -199,11 +188,91 @@ module boardVoid(boardTolerance){
 //
 
 
+
+//TODO is caseX right??
+caseX = 55;
+caseY = boardY + (trayY -trayBoardInsetY); //(23 + (12 - 2)
+//caseY = 30;
+//caseZ = 15; 
+VariableToBeDiscHeight = 3;
+caseZ = VariableToBeDiscHeight + (trayHeight - trayBoardInsetZOffset) + trayBatterySupportZHeight + trayBatteryHolderZ; //(4 + 4 + 4)
+caseMinkRad = 3;
+//mink cube as base
+
+
+module caseSlidingCap(capTolerance){
+    //part that goes into channel
+    union(){
+        //bottom
+        translate([0,0,-caseMinkRad]){
+            cube([caseMinkRad,caseY,caseZ]); //TODO: have Z here be an additional caseMinkRad/2 or just 0? butt up against case, it slide into top part?
+        }
+        
+        //sides
+        translate([0,-caseMinkRad,0]){
+            cube([caseMinkRad,caseY + caseMinkRad + caseMinkRad,caseZ ]);
+        }
+        
+        rotate([90,0,90]){
+            cylinder(caseMinkRad,caseMinkRad,caseMinkRad);
+        }    
     
+        translate([0,caseY,0]){    
+            rotate([90,0,90]){
+                cylinder(caseMinkRad,caseMinkRad,caseMinkRad);
+            }
+        }
+    } //end union
+    
+    //TODO - chop off some of right and left edges? or go all the way through case sides?
+    
+    //part that forms end cap
+    //TODO make minkowski and then difference off left top right sides - so bottom has curve... which could just be a quarter cylinder at that point...
+    translate([caseMinkRad,0,0]){
+        cube([caseMinkRad,caseY,caseZ]);
+        rotate([-90,0,0]){
+            cylinder(caseY,caseMinkRad,caseMinkRad);
+        }
+    }
+       
 }
+//whitespace
+//
+
+
+module case(){
+    difference(){
+        minkowski(){
+            cube([caseX,caseY,caseZ]);
+            sphere(caseMinkRad);
+        }
+        
+        //TODO
+        //is Y position good with minkowski raidus being distance between board ege and outside wall (on negative Y side) 
+        //what is wanted Z position - want it to be just mink radius off bottom of case?
+        translate([0,0,VariableToBeDiscHeight]){
+            boardVoid(0);
+        }
+        
+        //TODO use slider module to make void here
+    }
+}
+
+
 
 //
 // FOR REFERENCE / FOR REFERENCE / FOR REFERENCE
 //
 //this will model actual piece you want to print: tray(false,0,0);
 //this will model the void you want inside another object: tray(true,printTolerance,40); //or just a number long enough to make void go out back of case
+
+//boardVoid(0);
+
+//case();
+
+caseSlidingCap();
+
+//         //battery tray
+//        translate([15,boardY - trayBoardInsetY,-trayBoardInsetZOffset + 30]){
+//            tray(true,printTolerance,40);
+//        }
