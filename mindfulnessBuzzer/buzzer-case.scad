@@ -61,60 +61,83 @@ trayBoardCableSlotYOffset = trayBatterySupportYOverlap;
 
 
 //use 0 tolerance to create actual piece, use non-zero tolerance when using this module to difference from the receiving piece
-module tray(trayTolerance){ 
+//meh good idea but complicated to just use this in creating void in case - use output numbers/lolgic to create void in right shape
+///meh ok how about some true/false and X extensions
+module tray(modelVoid,trayTolerance,boardXAdd){ 
     //printer tolerance only needed for top edge of battery holder, top & bottom edge of slot, y edge of part that goes into case receiving slot
     //also move slot for board up by 1 trayTolerance amount, so board is centered vertically between the Z tolerances
     difference(){
         //the part of the tray that goes around edge of board and into slot in case
-        cube([trayX,trayY + trayTolerance,trayHeight + trayTolerance*2]);
-        
-        //remove void for edge of board
-        translate([0,0,trayBoardInsetZOffset + trayTolerance]){
-            cube([trayX,trayBoardInsetY,trayBoardInsetZ + trayTolerance]); //TODO check this, only doing one so tighter fit for board
-        }  
-        
-        //remove slot for battery cables
-        translate([trayBoardCableSlotXOffset,trayBoardCableSlotYOffset,0]){
-            cube([trayBoardCableSlotX,trayBoardCableSlotY,trayHeight + trayTolerance*2]);
-        }  
+        cube([trayX + boardXAdd,trayY + trayTolerance,trayHeight + trayTolerance*2]);
+
+        if (!modelVoid){    
+            //remove void for edge of board
+            translate([0,0,trayBoardInsetZOffset + trayTolerance]){
+                cube([trayX,trayBoardInsetY,trayBoardInsetZ + trayTolerance]); //TODO check this, only doing one so tighter fit for board
+            }  
+            
+            //remove slot for battery cables
+            translate([trayBoardCableSlotXOffset,trayBoardCableSlotYOffset,0]){
+                cube([trayBoardCableSlotX,trayBoardCableSlotY,trayHeight + trayTolerance*2]);
+            }  
+        }
+
     }
     
     //battery Support forward part of tray (closer to USB port)
     translate([0,-(trayBatterySupportY-trayBatterySupportYOverlap),trayHeight]){
         difference(){
-        //main part
-            cube([trayBatterySupportFwdX,trayBatterySupportY,trayBatterySupportZHeight]);
+            //main part
+            cube([trayBatterySupportFwdX + boardXAdd,trayBatterySupportY,trayBatterySupportZHeight]);
 
-        //subtract from under it to slide over components
-            cube([trayBatterySupportFwdX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportFwdZOffset]);
-        }  
+            if (!modelVoid){ 
+                //subtract from under it to slide over components
+                cube([trayBatterySupportFwdX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportFwdZOffset]);
+            }
+        }
     }
     
     //battery Support rear part of tray (further from USB port)
     translate([trayBatterySupportFwdX,-(trayBatterySupportY-trayBatterySupportYOverlap),trayHeight]){
         difference(){
-        //main part
-            cube([trayBatterySupportRearX,trayBatterySupportY,trayBatterySupportZHeight]);
-
-        //subtract from under it to slide over components
-            cube([trayBatterySupportRearX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportRearZOffset]);
+            //main part
+            cube([trayBatterySupportRearX + boardXAdd,trayBatterySupportY,trayBatterySupportZHeight]);
+            if (!modelVoid){ 
+                //subtract from under it to slide over components
+                cube([trayBatterySupportRearX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportRearZOffset]);
+            }
         }  
     }
     
+     
     //holder for battery that sits on top of battery support XY plane
     translate([0,-(trayBatterySupportY-trayBatterySupportYOverlap),trayHeight+trayBatterySupportZHeight]){
         difference(){
-            cube([trayX,trayBatterySupportY,trayBatteryHolderZ]);
-            translate([0,0,0]){
-                rotate([0,0,-45]){ //TODO hmm -45 is prob just about right. for exactness, battery void should be moved down a bit Y (bc battery hangs over this tray) and back some X, but I think that would get us to roughly the same spot actually
-                    cube([trayBatteryHolderX,trayBatteryHolderY,trayBatteryHolderZ]);
+            cube([trayX + boardXAdd,trayBatterySupportY,trayBatteryHolderZ]);
+            
+            if (!modelVoid){
+                translate([0,0,0]){
+                    rotate([0,0,-45]){ //TODO hmm -45 is prob just about right. for exactness, battery void should be moved down a bit Y (bc battery hangs over this tray) and back some X, but I think that would get us to roughly the same spot actually
+                        cube([trayBatteryHolderX,trayBatteryHolderY,trayBatteryHolderZ]);
+                    }
                 }
             }
         }
     }
     
+            echo("Tray Y =",trayY + trayTolerance);
+        echo("Tray Height =",trayHeight + trayTolerance*2);
     
+}
+//whitespace
+//
+
+
     
 }
 
-tray(0.0);
+//
+// FOR REFERENCE / FOR REFERENCE / FOR REFERENCE
+//
+//this will model actual piece you want to print: tray(false,0,0);
+//this will model the void you want inside another object: tray(true,printTolerance,40); //or just a number long enough to make void go out back of case
