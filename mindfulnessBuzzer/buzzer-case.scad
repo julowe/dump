@@ -133,6 +133,72 @@ module tray(modelVoid,trayTolerance,boardXAdd){
 //
 
 
+boardX = 53 + 6; //need to add minkowski radius to get through backwall, just made bigger number, yeah bad. ugh.
+boardY = 23;
+boardZ = 2;
+
+//trayHeight = 4; //TODO do we want to make edge that goes into slot thinner?
+
+boardYOverflow = trayY - trayBoardInsetY;
+
+module boardVoid(boardTolerance){
+    //NB: All components must have a clear channel from end to final position so they can slide into case
+    union(){
+        //base board, no components
+        cube([boardX,boardY,boardZ]);
+        
+        //USB port
+        translate([0,boardY/2 - 8/2,boardZ]){
+            cube([boardX,8,3.5]);
+        }
+        
+        //USB Cable area
+        //metal port  
+        translate([-2,boardY/2 - 8/2,boardZ]){
+            cube([2,8,3.5]); //TODO make this trapezoidal
+        }
+        //cable shroud 
+        translate([-2-30,boardY/2 - (11+2+2)/2,boardZ-3.5/2]){
+            cube([30,11+2+2,8]); //TODO make this trapezoidal
+        }
+        
+        //TODO red LED
+        
+         //JST Port
+        translate([7,boardY - 8,boardZ]){
+            cube([boardX-7,8,6]);
+        }
+        
+         //JST cable
+        translate([7,boardY,boardZ]){
+            cube([boardX-7,7,5.5]);
+        }
+        
+        //TODO yellow led
+        
+        //TODO reset button
+        
+         //battery tray
+        translate([15,boardY - trayBoardInsetY,-trayBoardInsetZOffset]){
+            tray(true,printTolerance,40);
+        }
+        
+        //TODO battery sticking out... hmm crap maybe do in tray void??
+        
+        //TODO button (Button legs over side of board taken care of by battery tray slide slot
+        
+        //TODO components on lower half of board, esp protoboard
+        
+        //TODO vibration motor and cables
+        
+        
+        
+    }
+}
+//whitespace
+//
+
+
     
 }
 
