@@ -226,9 +226,8 @@ module caseSlidingCap(capTolerance){
     } //end union
     
     //TODO - chop off some of right and left edges? or go all the way through case sides?
-    
+    //i'm leaning towards chopping off a mm from each side - yeah bc otherwise there is a whole column of material on each side that can pull off easily (between the two cylinders of side and back)
     //part that forms end cap
-    //TODO make minkowski and then difference off left top right sides - so bottom has curve... which could just be a quarter cylinder at that point...
     translate([sliderX,0,0]){
         cube([caseMinkRad,caseY,caseZ]);
         difference(){
