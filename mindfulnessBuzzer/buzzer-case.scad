@@ -122,7 +122,9 @@ module tray(modelVoid,trayTolerance,boardXAdd){
 //
 
 
-boardX = 53 + 6; //need to add minkowski radius to get through backwall, just made bigger number, yeah bad. ugh.
+//these are not measuremnts of the board, but the board + tolerances etc to make void
+boardX = 51;
+boardXVoid = boardX + 6;//need to add minkowski radius to get through backwall
 boardY = 23;
 boardZ = 2;
 
@@ -130,15 +132,16 @@ boardZ = 2;
 
 boardYOverflow = trayY - trayBoardInsetY;
 
+//TODO remove boardTolerance and just bake it into the above?
 module boardVoid(boardTolerance){
     //NB: All components must have a clear channel from end to final position so they can slide into case
     union(){
         //base board, no components
-        cube([boardX,boardY,boardZ]);
+        cube([boardXVoid,boardY,boardZ]);
         
         //USB port
         translate([0,boardY/2 - 8/2,boardZ]){
-            cube([boardX,8,3.5]);
+            cube([boardXVoid,8,3.5]);
         }
         
         //USB Cable area
@@ -151,21 +154,26 @@ module boardVoid(boardTolerance){
             cube([30,11+2+2,8]); //TODO make this trapezoidal
         }
         
-        //TODO red LED
+        //red & yellow LED
+        translate([0,4,boardZ]){
+            cube([boardXVoid,14,1.5]);
+        }
         
          //JST Port
         translate([7,boardY - 8,boardZ]){
-            cube([boardX-7,8,6]);
+            cube([boardXVoid-7,8,6]);
         }
         
          //JST cable
         translate([7,boardY,boardZ]){
-            cube([boardX-7,7,5.5]);
+            cube([boardXVoid-7,7,5.5]);
         }
         
-        //TODO yellow led
         
-        //TODO reset button
+        //board reset button
+        translate([6,4,boardZ]){
+            cube([boardXVoid,4,2+0.5]); //3.6 measured with 1.7 board thickness
+        }
         
          //battery tray
         translate([15,boardY - trayBoardInsetY,-trayBoardInsetZOffset]){
@@ -174,11 +182,14 @@ module boardVoid(boardTolerance){
         
         //TODO battery sticking out... hmm crap maybe do in tray void??
         
-        //TODO button (Button legs over side of board taken care of by battery tray slide slot
+        //TODO water button (Button legs over side of board taken care of by battery tray slide slot)
+        translate([42,boardY-10,boardZ]){
+            cube([10,10,10+5]);
+        }
         
-        //TODO components on lower half of board, esp protoboard
+        //TODO components on lower Y-half of board, esp protoboard. also near reset button??
         
-        //TODO vibration motor and cables
+        //TODO vibration motor and cables & protoboard solder on bottom
         
         
         
@@ -190,7 +201,7 @@ module boardVoid(boardTolerance){
 
 
 //TODO is caseX right??
-caseX = 55;
+caseX = boardX+1; //+1 because button extends 1mm beyond edge of board //TODO TEST THIS
 caseY = boardY + (trayY -trayBoardInsetY); //(23 + (12 - 2)
 //caseY = 30;
 //caseZ = 15; 
