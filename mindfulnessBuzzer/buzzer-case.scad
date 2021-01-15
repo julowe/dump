@@ -1,6 +1,6 @@
 //case for mindfulness buzzer/feather
 //contains disc buzzer, feather, battery, & button
-//clip on back? unknown.
+//clip on end cap, or not
 
 //TODO
 //make battery tray module, with clip for around top edge of PCB, pass tolerance allotment (0 for printing, >0.1 etc for voiding use)
