@@ -247,6 +247,54 @@ module caseSlidingCap(capTolerance){
 //whitespace
 //
 
+endcapInsetX = 7; //this should give room for a heat set insert
+insertDiameter = 5.3;
+clipZ = 2;
+clipZGap = 2;
+clipY = 10;
+clipX = 35;
+
+//TODO - test clip. likely too flimsy...
+
+module caseSlideInEndcap(clip){ 
+    //make outer edges/end
+    translate([-0.2,0,0]){
+        difference(){
+            minkowski(){
+                union(){
+                    cube([0.2,caseY,caseZ]);
+                    if(clip){
+                        translate([-clipX,caseY/2-clipY/2,-(clipZ+clipZGap)]){
+                            cube([clipX+0.2,clipY,clipZ+clipZGap]);
+                        }
+                    }
+                }
+                sphere(caseMinkRad);
+            }
+            translate([-clipX-caseMinkRad,-caseMinkRad,-caseMinkRad-clipZGap]){
+                cube([clipX+0.2+caseMinkRad,caseY+caseMinkRad*2,caseZ+caseMinkRad*2+clipZGap]);
+            }
+        }
+    }
+    
+    //part that slides into case
+    difference(){
+        translate([-endcapInsetX,0,0]){
+            cube([endcapInsetX,caseY,caseZ]);
+        }
+    
+        translate([-(insertDiameter/2+0.5),caseY-7,caseZ/2]){
+            rotate([-90,0,0]){
+                cylinder(7,insertDiameter/2,insertDiameter/2);
+            }
+        }
+    }
+}
+//whitespace
+//
+
+
+endcapInsetXTolerance = 1; //extra slack space
 
 module case(){
     difference(){
@@ -256,14 +304,30 @@ module case(){
         }
         
         //TODO
-        //is Y position good with minkowski raidus being distance between board ege and outside wall (on negative Y side) 
+        //is Y position good with minkowski raidus being distance between board edge and outside wall (on negative Y side) 
         //what is wanted Z position - want it to be just mink radius off bottom of case?
         translate([0,0,VariableToBeDiscHeight]){
             boardVoid(0);
         }
         
         //TODO use slider module to make void here
-    }
+        
+        //remove material for slide in endcap
+        
+        //remove outer edges for end cap
+        translate([caseX,-caseMinkRad,-caseMinkRad]){
+            cube([caseMinkRad,caseY+caseMinkRad*2,caseZ+caseMinkRad*2]);
+        }
+        
+        //remove material for end capo to slide in
+        translate([caseX-endcapInsetX-endcapInsetXTolerance,0,0]){
+            cube([endcapInsetX+endcapInsetXTolerance,caseY,caseZ]);
+        }
+        
+        //todo
+        //make hole for screw
+        //make inset for screw head
+    } //end difference
 }
 
 
@@ -274,11 +338,16 @@ module case(){
 //this will model actual piece you want to print: tray(false,0,0);
 //this will model the void you want inside another object: tray(true,printTolerance,40); //or just a number long enough to make void go out back of case
 
+//tray(false,0,0);
+
+
 //boardVoid(0);
 
-//case();
+case();
 
-caseSlidingCap();
+//caseSlidingCap();
+
+//caseSlideInEndcap(false);
 
 //         //battery tray
 //        translate([15,boardY - trayBoardInsetY,-trayBoardInsetZOffset + 30]){
