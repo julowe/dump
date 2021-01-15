@@ -295,8 +295,8 @@ module caseSlideInEndcap(clip){
     
     //part that slides into case
     difference(){
-        translate([-endcapInsetX,0,0]){
-            cube([endcapInsetX,caseY,caseZ]);
+        translate([-endcapInsetX,caseY-7,0]){
+            cube([endcapInsetX,7,caseZ]);
         }
     
         translate([-(insertDiameter/2+0.5),caseY-7,caseZ/2]){
@@ -304,7 +304,23 @@ module caseSlideInEndcap(clip){
                 cylinder(7,insertDiameter/2,insertDiameter/2);
             }
         }
+    } //end difference
+    
+    //-Y side of inset, full height
+    translate([-1.5,0,0]){
+        cube([1.5,10,caseZ]);
     }
+    
+    //-y side of inset, under board
+    translate([-4,0,0]){
+        cube([4,8,VariableToBeDiscHeight-1]);
+    }
+    
+    //-y side of inset, above board
+    translate([-endcapInsetX,0,5+boardZ]){
+        cube([endcapInsetX,8,caseZ-(5+boardZ)]);
+    }
+       
 }
 //whitespace
 //
