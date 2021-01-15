@@ -69,6 +69,8 @@ module tray(modelVoid,trayTolerance,boardXAdd){
             translate([trayBoardCableSlotXOffset,trayBoardCableSlotYOffset,0]){
                 cube([trayBoardCableSlotX,trayBoardCableSlotY,trayHeight + trayTolerance*2]);
             }  
+            
+            //TODO remove slot for orange cable on top of board
         }
 
     }
@@ -81,6 +83,7 @@ module tray(modelVoid,trayTolerance,boardXAdd){
 
             if (!modelVoid){ 
                 //subtract from under it to slide over components
+                //TODO Fix under voids
                 cube([trayBatterySupportFwdX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportFwdZOffset]);
             }
         }
@@ -93,6 +96,7 @@ module tray(modelVoid,trayTolerance,boardXAdd){
             cube([trayBatterySupportRearX + boardXAdd,trayBatterySupportY,trayBatterySupportZHeight]);
             if (!modelVoid){ 
                 //subtract from under it to slide over components
+                //TODO Fix under voids
                 cube([trayBatterySupportRearX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportRearZOffset]);
             }
         }  
@@ -106,7 +110,9 @@ module tray(modelVoid,trayTolerance,boardXAdd){
             
             if (!modelVoid){
                 translate([0,0,0]){
-                    rotate([0,0,-45]){ //TODO hmm -45 is prob just about right. for exactness, battery void should be moved down a bit Y (bc battery hangs over this tray) and back some X, but I think that would get us to roughly the same spot actually
+                    rotate([0,0,-45]){ //TODO hmm -45 is prob just about right. 
+                        //NOPE for exactness, battery void should be moved down a bit Y (bc battery hangs over this tray) and back some X, but I think that would get us to roughly the same spot actually
+                        //TODO move battery up Y a bit. maybe change angle
                         cube([trayBatteryHolderX,trayBatteryHolderY,trayBatteryHolderZ]);
                     }
                 }
