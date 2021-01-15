@@ -20,8 +20,6 @@ printTolerance = 0.2;
 
 
 
-
-
 trayHeight = 4; //TODO do we want to make edge that goes into slot thinner?
 trayY = 12;
 trayX = 25;
@@ -134,6 +132,8 @@ boardXVoid = boardX + 6;//need to add minkowski radius to get through backwall
 boardY = 23;
 boardZ = 2;
 
+VariableToBeDiscHeight = 3;
+
 //trayHeight = 4; //TODO do we want to make edge that goes into slot thinner?
 
 boardYOverflow = trayY - trayBoardInsetY;
@@ -178,7 +178,7 @@ module boardVoid(boardTolerance){
         
         //board reset button
         translate([6,4,boardZ]){
-            cube([boardXVoid,4,2+0.5]); //3.6 measured with 1.7 board thickness
+            cube([boardXVoid-6,4,2+0.5]); //3.6 measured with 1.7 board thickness
         }
         
          //battery tray
@@ -188,14 +188,29 @@ module boardVoid(boardTolerance){
         
         //TODO battery sticking out... hmm crap maybe do in tray void??
         
-        //TODO water button (Button legs over side of board taken care of by battery tray slide slot)
+        //water button (Button legs over side of board taken care of by battery tray slide slot)
         translate([42,boardY-10,boardZ]){
             cube([10,10,10+5]);
         }
         
-        //TODO components on lower Y-half of board, esp protoboard. also near reset button??
+        //components on lower Y-half of board's protoboard
+        translate([30,3,boardZ]){
+            cube([boardXVoid-30,9,5]); //3.6 measured with 1.7 board thickness
+        }
         
-        //TODO vibration motor and cables & protoboard solder on bottom
+        //components -Y to the board reset button
+        translate([4,3,boardZ]){
+            cube([boardXVoid-4,3,1.5]); //3.6 measured with 1.7 board thickness
+        }
+        
+        //vibration motor on bottom of board
+        translate([9,6,0-VariableToBeDiscHeight]){
+            cube([boardXVoid-9,12,VariableToBeDiscHeight]);
+        }
+        //cables & protoboard solder on bottom of proto board
+        translate([30,3,0-2]){
+            cube([boardXVoid-30,boardY-3,2]);
+        }
         
         
         
@@ -211,7 +226,6 @@ caseX = boardX+1; //+1 because button extends 1mm beyond edge of board //TODO TE
 caseY = boardY + (trayY -trayBoardInsetY); //(23 + (12 - 2)
 //caseY = 30;
 //caseZ = 15; 
-VariableToBeDiscHeight = 3;
 caseZ = VariableToBeDiscHeight + (trayHeight - trayBoardInsetZOffset) + trayBatterySupportZHeight + trayBatteryHolderZ; //(4 + 4 + 4)
 caseMinkRad = 3;
 //mink cube as base
