@@ -1,6 +1,11 @@
 // clip for hanging bar above sink
 // justin lowe 20201116
 
+//v2 are measuremnts of bar, not clips that apparently don't fit well over bar... darn.
+barHeight = 25; //24.3 actual
+barDepth = 12.5; //12.25 actual
+barStandoff = 33.3; //distance from front of bar to wall behind it
+
 //11.75mm void depth for clip (part that goes around hanging bar)
 //14.5 mm wide clip (looking striaght on, left to right side) not important really
 //15.4mm height straight section of clip 
@@ -14,11 +19,15 @@ renderingFNs = 180;
 currentFNs = draftingFNs;
 $fn = currentFNs;
 
-clipInnerRadius = 11.75/2;
+
+//clipInnerRadius = 11.75/2; //v1
+clipInnerRadius = barDepth/2; //v2
 clipWallThickness = 3;
 clipOuterRadius = clipInnerRadius+clipWallThickness;
-clipInnerHeight = 15.5;
-clipOuterHeight = 20;
+//clipInnerHeight = 15.5; //v1
+//clipOuterHeight = 20; //v1
+clipInnerHeight = barHeight - barDepth; // minus 2x the radius
+clipOuterHeight = clipInnerHeight + 4; //how much the front/outer side of the clip extends down
 
 clipWidth = 14;
 
@@ -42,6 +51,65 @@ polyFaces = [
   [0,2,4,3],  // back
   [3,4,5],  // top
 ]; 
+
+
+module clip(){
+    difference(){
+        //outer cylinder to subtract from 
+        translate([0,0,0]){
+            cylinder(clipWidth,clipOuterRadius,clipOuterRadius);
+        }
+        
+        //inner cylinder to subtract
+        translate([0,0,0]){
+            cylinder(clipWidth,clipInnerRadius,clipInnerRadius);
+        }
+        
+        //get rid of bottom half of cylinder/tube
+        translate([-(clipOuterRadius),-(clipOuterRadius)*2,0]){
+            cube([(clipOuterRadius)*2,(clipOuterRadius)*2,clipWidth]);
+        }
+    } //end of difference
+    
+    translate([0,-clipInnerHeight,0]){
+        difference(){
+            //outer cylinder to subtract from 
+            translate([0,0,0]){
+                cylinder(clipWidth,clipOuterRadius,clipOuterRadius);
+            }
+            
+            //inner cylinder to subtract
+            translate([0,0,0]){
+                cylinder(clipWidth,clipInnerRadius,clipInnerRadius);
+            }
+            
+            //get rid of top half of cylinder/tube
+            translate([-(clipOuterRadius),0,0]){
+                cube([(clipOuterRadius)*2,(clipOuterRadius)*2,clipWidth]);
+            }
+      
+            polyhedron( polyPoints, polyFaces );
+    
+            //get rid of bottom half of cylinder/tube
+            translate([0,-(clipOuterRadius),0]){
+                cube([(clipOuterRadius),(clipOuterRadius),clipWidth]);
+            }
+        } //end of difference
+    }  
+    
+    //clip wall behind hanging bar
+    translate([-(clipInnerRadius+clipWallThickness),-clipInnerHeight,0]){
+        cube([clipWallThickness,clipInnerHeight,clipWidth]);
+    }
+    
+    //clip wall in front of hanging bar
+    translate([clipInnerRadius,-clipOuterHeight,0]){
+        cube([clipWallThickness,clipOuterHeight,clipWidth]);
+    }
+
+} //end module
+//whitespace
+
 
 module hanger(){
     translate([clipOuterRadius,-hangerRadius,clipWidth/2]){
@@ -71,77 +139,6 @@ module hanger(){
     }
 } //end module
 //whitespace
-    
-
-module clip(){
-    difference(){
-        //outer cylinder to subtract from 
-        translate([0,0,0]){
-            cylinder(clipWidth,clipOuterRadius,clipOuterRadius);
-        }
-        
-        //inner cylinder to subtract
-        translate([0,0,0]){
-            cylinder(clipWidth,clipInnerRadius,clipInnerRadius);
-        }
-        
-        //get rid of bottom half of cylinder/tube
-        translate([-(clipOuterRadius),-(clipOuterRadius)*2,0]){
-            cube([(clipOuterRadius)*2,(clipOuterRadius)*2,clipWidth]);
-        }
-    } //end of difference
-    
-    
-    
-    
-    translate([0,-clipInnerHeight,0]){
-        difference(){
-            //outer cylinder to subtract from 
-            translate([0,0,0]){
-                cylinder(clipWidth,clipOuterRadius,clipOuterRadius);
-            }
-            
-            //inner cylinder to subtract
-            translate([0,0,0]){
-                cylinder(clipWidth,clipInnerRadius,clipInnerRadius);
-            }
-            
-            //get rid of top half of cylinder/tube
-            translate([-(clipOuterRadius),0,0]){
-                cube([(clipOuterRadius)*2,(clipOuterRadius)*2,clipWidth]);
-            }
-            
-    
-      
-            polyhedron( polyPoints, polyFaces );
-    
-            //get rid of bottom half of cylinder/tube
-            translate([0,-(clipOuterRadius),0]){
-                cube([(clipOuterRadius),(clipOuterRadius),clipWidth]);
-            }
-                    
-    //        //get rid of most of bottom half of cylinder/tube
-    //        translate([0,-(clipOuterRadius)+0,clipWidth]){
-    //            rotate([0,180,30]){
-    //                cube([(clipOuterRadius),(clipOuterRadius),clipWidth]);
-    //            }
-    //        }
-        } //end of difference
-    }  
-    
-    //clip wall behind hanging bar
-    translate([-(clipInnerRadius+clipWallThickness),-clipInnerHeight,0]){
-        cube([clipWallThickness,clipInnerHeight,clipWidth]);
-    }
-    
-    //clip wall in front of hanging bar
-    translate([clipInnerRadius,-clipOuterHeight,0]){
-        cube([clipWallThickness,clipOuterHeight,clipWidth]);
-    }
-
-} //end module
-//whitespace
-
 
 
 clip();
