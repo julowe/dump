@@ -1,7 +1,7 @@
 //pelican style box
 //20210210 jkl
 
-/*modeling outline 
+/*modeling outline TODO update to reflect reality
 1. make simple box with cubes, spheres at corners, cylinders at edges (v minkowski quicker to render. worth it?)
 2. as below:
 difference(){
@@ -30,12 +30,15 @@ a. make clip(s?)
 */
 
 //opting for specific sequential operations/math over condensing variables - e.g. "boxRidgeWidth + boxClipFrontWidth + boxRidgeWidth" vs "boxClipFrontWidth + boxRidgeWidth*2" to (hopefully) more clearly show physical dimensions of clip and ridges on either side
+//front & back refer to parts of the box, forward and rear are used as directions (e.g. forward half of left side of back vs front face of box)
 
 draftingFNs = 18;
 renderingFNs = 360;
 //currentFNs = draftingFNs;
 $fn = draftingFNs;
 
+//NB: these are inner dimensions!
+//NB: these are inner dimensions!
 //NB: these are inner dimensions!
 boxInteriorWidth = 80;
 boxInteriorDepth = 80;
@@ -44,6 +47,8 @@ boxInteriorHeight = 40;
 
 boxRoundingRadius = 5;
 boxWallWidth = 5; //should boxRoundingRadius be required to equal boxWallWidth? TODO
+
+//TODO logic to not make ridges? or just make zero width and set clip width as different width? ugh that might break assumptions/code
 boxRidgeDepth = 5;
 boxRidgeWidth = 3;
 boxRidgePairOffset = 5;
@@ -201,7 +206,7 @@ translate([boxRidgeDepth,boxRidgeDepth,0]){
 
 maxDistanceFront = boxInteriorWidth+boxWallWidth*2-boxRoundingRadius*2; //gives edge length w/o corners
 
-//paired front ridges would be at least (0 input for areas between ridges and closing clip): (add seperation of at least a boxRidgeWidth between 2 left ridge and 3rd left (i.e. left side ridge to hold clip pins)
+//paired front ridges would be at least (add seperation of at least a boxRidgeWidth between 2 left ridges and 3rd left (i.e. between left side paired ridges and left side ridge to hold clip pins):
 minDistanceFrontPairRidges = boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxClipFrontWidth + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth;
 
 //single front ridges
@@ -226,6 +231,13 @@ difference(){ //difference1
         //clip pin voids 
         //TODO
          
+
+    /* --------------------------|
+    /                            |
+    /        FRONT RIDGES        |
+    /                            |
+    / --------------------------*/ 
+        
     if (maxDistanceFront >= minDistanceFrontPairRidges) { //if paired ridges front do fit
         //pairs - consider 3 objects, center the clip, then 1/3 the distance of the corner to clip area (away from corners) place ridge/offset/ridge objects? aaaand then invert that because we are removing material to create voids, not placing objects
     
@@ -293,7 +305,7 @@ difference(){ //difference1
                 cube([boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+widthFrontLeft+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(widthFrontRight-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
             }
         } //end if/else paired front ridges fit at ratio placement
-    } else if (maxDistanceFront >= minDistanceFrontSingleRidges) { //else-if single ridges front do fit
+    } else if (maxDistanceFront >= minDistanceFrontSingleRidges) { //else-if paired ridge do NOT fit but single ridges front DO fit
         //single ridges bc pair ridge too big
         if (widthFrontLeft/ridgePlacementRatio > boxRidgeWidth/2){ //if not fit single ridge ratio
             //good to place single ridge at offset from corner
@@ -321,23 +333,40 @@ difference(){ //difference1
             translate([0,0,0]){
                 cube([boxRidgeDepth+boxRoundingRadius,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
             }
-            //void from 2nd left ridge to clip ridge
+            //void from 2nd left ridge to clip ridge WTF WTF
             translate([boxRidgeDepth+boxRoundingRadius+boxRidgeWidth,0,0]){
                 cube([widthFrontLeft-boxRidgeWidth,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
             }
             
             //right ridges
-            //void from clip to 1st right ridge (numbering from left to right)
+            //void from clip to 1st right ridge (numbering from left to right) WTF
             translate([boxRidgeDepth+boxRoundingRadius+widthFrontLeft+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth,0,0]){
                 cube([widthFrontRight-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
             }
-            //void from 1st right ridge to 2nd right ridge (numbering from left to right)
+            //WTF void from 1st right ridge to 2nd right ridge (numbering from left to right)
             translate([boxRidgeDepth+boxRoundingRadius+widthFrontLeft+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(widthFrontRight-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth,0,0]){
                 cube([boxRidgePairOffset,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
             }
-            //void from 2nd right ridge to corner (numbering from left to right)
+            //WTF void from 2nd right ridge to corner (numbering from left to right)
             translate([boxRidgeDepth+boxRoundingRadius+widthFrontLeft+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(widthFrontRight-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0,0]){
                 cube([boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+widthFrontLeft+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(widthFrontRight-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
             }
         } //end if/else of not fit single ridge ratio
         
@@ -357,8 +386,279 @@ difference(){ //difference1
         assert(false,"ERROR: Box width is smaller than a single ridge on each side of clip. Decrease clip width or ridge widths, or increase width of box");
     } //end if/else-if/else-if/else front single or paired ridges front fit logic
     
-    echo("widthFrontLeft = ", widthFrontLeft); //TODO remove debug statements
+    /* -------------------------|
+    /                           |
+    /        SIDE RIDGES        |
+    /                           |
+    / -------------------------*/
     
+//    boxClipSideWidth = 15;
+//    boxClipSide = true;
+ 
+    fullRidgedBoxWidth = boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2; //dimensions of box with ridges    
+    maxDistanceSide = boxInteriorDepth+boxWallWidth*2-boxRoundingRadius*2; //gives edge length w/o corners
+    
+    if (boxClipSide) { //if clip on sides
+        
+
+
+    //paired side ridges would be at least (add seperation of at least a boxRidgeWidth between 2 front ridges and 3rd front (i.e. between front side paired ridges and front side ridge to hold clip pins):
+    minDistanceSidePairRidges = boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxClipSideWidth + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth;
+    
+    //single side ridges
+    minDistanceSideSingleRidges = boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxClipSideWidth + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth;
+            
+     
+     //             (half of flat side part + box wall on one side - rounded corner on one side) - half of box side clip  - full width of one of the clip ridges (clip pin goes through this to hold clip)
+    depthSideForward = (boxInteriorDepth/2+boxWallWidth-boxRoundingRadius)-boxClipSideWidth/2-boxRidgeWidth;
+    depthSideRear = depthSideForward; //just remember to offset from center of box, not sure why would want this different... a lock on one side? but for now make the same as front side       
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        if (maxDistanceSide >= minDistanceSidePairRidges) { //if paired ridges side do fit
+            //pairs - consider 3 objects, center the clip, then 1/3 the distance of the corner to clip area (away from corners) place ridge/offset/ridge objects? aaaand then invert that because we are removing material to create voids, not placing objects
+        
+            if (depthSideForward/ridgePlacementRatio > widthRidgePair/2){ //if paired side ridges fit at ratio placement
+                //good to go with ridge pair offset from corner
+                
+                //side forward ridges
+                //void from corner to 1st side foward ridge
+                translate([0,0,0]){
+                    cube([fullRidgedBoxWidth,boxRidgeDepth+boxRoundingRadius,boxRidgeDepth+boxRoundingRadius+depthSideForward/ridgePlacementRatio-widthRidgePair/2,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 1st forward ridge to 2nd forward ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxRidgePairOffset,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 2nd forward ridge to forward clip ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideForward-(depthSideForward/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                
+                //rear ridges
+                //void from clip to 1st rear ridge (numbering from fprward to rear)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 1st fwd ridge to 2nd fwd ridge (numbering from fwd to rear)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxRidgePairOffset,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 2nd fwd ridge to corner (numbering from fwd to rear)
+        //        translate([(boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2)-boxRidgeDepth-boxRoundingRadius,0,0]){
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                
+            } else { //else, paired side ridges do NOT fit at ratio placement
+                // 1/$ratio of distance is too small, place ridge pair directly at edge
+                //void from corner to 1st fwd ridge
+                translate([0,0,0]){
+                    cube([fullRidgedBoxWidth,boxRidgeDepth+boxRoundingRadius,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 1st fwd ridge to 2nd fwd ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxRidgePairOffset,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 2nd fwd ridge to fwd clip ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideForward-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                
+                //rear ridges
+                //void from clip to 1st rear ridge (numbering from fwd to rear)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 1st rear ridge to 2nd rear ridge (numbering from fwd to rear)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxRidgePairOffset,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from 2nd rear ridge to corner (numbering from fwd to rear)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+            } //end if/else paired side ridges fit at ratio placement
+        } else if (maxDistanceSide >= minDistanceSideSingleRidges) { //else-if single ridges side do fit
+            //single ridges bc pair ridge too big
+            if (depthSideForward/ridgePlacementRatio > boxRidgeWidth/2){ //if not fit single ridge ratio
+                //good to place single ridge at offset from corner
+                //corner to first ridge
+                translate([0,0,0]){
+                    cube([fullRidgedBoxWidth,boxRidgeDepth+boxRoundingRadius+depthSideForward/ridgePlacementRatio-boxRidgeWidth/2,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from fwd ridge to clip ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward/ridgePlacementRatio-boxRidgeWidth/2+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideForward-(depthSideForward/ridgePlacementRatio-boxRidgeWidth/2+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+            
+                //void from clip to 1st rear ridge (numbering from fwd to rear)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideRear-(depthSideRear/ridgePlacementRatio-boxRidgeWidth/2+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from rear ridge to corner
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-boxRidgeWidth/2+boxRidgeWidth))+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-boxRidgeWidth/2+boxRidgeWidth))+boxRidgeWidth),,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                
+            } else { //else if not fit single ridge ratio     
+                // 1/$ratio of distance is too small, place ridge directly at the edge
+                //void from corner to fwd ridge
+                translate([0,0,0]){
+                    cube([fullRidgedBoxWidth,boxRidgeDepth+boxRoundingRadius,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //void from fwd ridge to clip ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideForward-boxRidgeWidth,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                
+                //rear ridge
+                //void from clip to rear ridge
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //WTF WTF
+                //WTF WTF
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                //void from 1st right ridge to 2nd right ridge (numbering from left to right) WTF
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxRidgePairOffset,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+                //WTF void from 2nd right ridge to corner (numbering from left to right)
+                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
+                    cube([fullRidgedBoxWidth,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+                }
+            } //end if/else of not fit single ridge ratio
+            
+            
+        } else if (maxDistanceSide >= boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth) {//else-if single ridges side do NOT fit, only clip
+            //no room for reinforcing ridges, just have clip ridges
+            //void from fwd corner to clip ridge
+            translate([0,0,0]){
+                cube([fullRidgedBoxWidth,boxRidgeDepth+boxRoundingRadius+depthSideForward,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+            }
+            //void from clip ridge to rear corner
+            translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipFrontWidth+boxRidgeWidth,0]){
+                cube([fullRidgedBoxWidth,boxRidgeDepth+boxRoundingRadius+depthSideForward,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
+            }
+                
+        } else { //else single ridges front do NOT fit, and clip does NOT fit - error
+            assert(false,"ERROR: Box width is smaller than a single ridge on each side of clip. Decrease clip width or ridge widths, or increase width of box");
+        } //end if/else-if/else-if/else front single or paired ridges front fit logic
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    } else { //else, NOT clip on sides
+        
+        
+        //TODO decide on min void netween ridges before we just don't place any on the side
+        //paired side ridges would be at least (add seperation of at least two[?] boxRidgeWidth between paired ridges):
+        minDistanceSidePairRidges = boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth + boxRidgeWidth*2 + boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth;
+        
+        //single side ridges
+        minDistanceSideSingleRidges = boxRidgeWidth + boxRidgeWidth*2 + boxRidgeWidth;
+            
+    } //end if/else clip on sides
+    
+    echo("widthFrontLeft = ", widthFrontLeft); //TODO remove debug statements
     echo("widthFrontLeft/ridgePlacementRatio = ", widthFrontLeft/ridgePlacementRatio); 
     } //end union of ridge differences
 
