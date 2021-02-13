@@ -32,17 +32,22 @@ a. make clip(s?)
 //opting for specific sequential operations/math over condensing variables - e.g. "boxRidgeWidth + boxClipFrontWidth + boxRidgeWidth" vs "boxClipFrontWidth + boxRidgeWidth*2" to (hopefully) more clearly show physical dimensions of clip and ridges on either side
 //front & back refer to parts of the box, forward and rear are used as directions (e.g. forward half of left side of back vs front face of box)
 
+
+//TODO oring seal indent and ridge on top edge of bottom half of case
+//TODO make object to print TPU seal
+//TODO also compute diameter of seal so o-ring can be ordered
+
 draftingFNs = 18;
 renderingFNs = 180;
 //currentFNs = draftingFNs;
-$fn = renderingFNs;
+$fn = draftingFNs;
 debugBool = true;
 
 //NB: these are inner dimensions!
 //NB: these are inner dimensions!
 //NB: these are inner dimensions!
-boxInteriorWidth = 33;
-boxInteriorDepth = 55;
+boxInteriorWidth = 85;
+boxInteriorDepth = 65;
 boxInteriorHeight = 33;
 
 
@@ -57,7 +62,7 @@ boxClipFrontWidth = 15;
 boxClipSideWidth = 15;
 boxClipSide = true;
 
-ridgePlacementRatio = 4; //used as 1/ridgePlacementRatio further on
+ridgePlacementRatio = 3; //used as 1/ridgePlacementRatio further on
 
 //helpful values to calculate placement of front ridges
 widthRidgePair = boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth;
@@ -186,6 +191,8 @@ translate([boxRidgeDepth,boxRidgeDepth,0]){
         //base shell
         difference(){
         roundedBox(boxInteriorWidth+boxWallWidth*2, boxInteriorDepth+boxWallWidth*2, boxInteriorHeight+boxWallWidth*2, boxRoundingRadius);
+            
+            //TODO move this to much later step so it actually creates a full void
             translate([boxWallWidth,boxWallWidth,boxWallWidth]){
         roundedBox(boxInteriorWidth, boxInteriorDepth, boxInteriorHeight, boxRoundingRadius);
             }
@@ -370,14 +377,13 @@ difference(){ //difference1
         assert(false,"ERROR: Box width is smaller than a single ridge on each side of clip. Decrease clip width or ridge widths, or increase width of box");
     } //end if/else-if/else-if/else front single or paired ridges front fit logic
     
+    
+    
     /* -------------------------|
     /                           |
     /        SIDE RIDGES        |
     /                           |
-    / -------------------------*/
-    
-//    boxClipSideWidth = 15;
-//    boxClipSide = true;
+    / -------------------------*/ 
  
     fullRidgedBoxWidth = boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2; //dimensions of box with ridges    
     maxDistanceSide = boxInteriorDepth+boxWallWidth*2-boxRoundingRadius*2; //gives edge length w/o corners
@@ -387,20 +393,17 @@ difference(){ //difference1
     echo("maxDistanceSide = ", maxDistanceSide);
     
     if (boxClipSide) { //if clip on sides
-
         //side clip void
         translate([0,-boxClipSideWidth/2+(boxInteriorDepth+boxRoundingRadius*2+boxRidgeDepth*2)/2,0]){
             cube([fullRidgedBoxWidth,boxClipSideWidth,boxInteriorHeight+boxWallWidth*2]);
         }
-    
-    
+
         //paired side ridges would be at least (add seperation of at least a boxRidgeWidth between 2 front ridges and 3rd front (i.e. between front side paired ridges and front side ridge to hold clip pins):
         minDistanceSidePairRidges = boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxClipSideWidth + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxRidgePairOffset + boxRidgeWidth;
         
         //single side ridges
         minDistanceSideSingleRidges = boxRidgeWidth + boxRidgeWidth + boxRidgeWidth + boxClipSideWidth + boxRidgeWidth + boxRidgeWidth + boxRidgeWidth;
                
-           
         //TODO remove debug
         if (debugBool) {
             echo("minDistanceSidePairRidges = ", minDistanceSidePairRidges);
@@ -451,11 +454,11 @@ difference(){ //difference1
                 }
                 //left side void from 2nd rear ridge to corner (numbering from fwd to rear)
                 translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
-                    cube([boxRidgeDepth+boxRoundingRadius,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxInteriorHeight+boxWallWidth*2]);
+                    cube([boxRidgeDepth+boxRoundingRadius,boxInteriorDepth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxInteriorHeight+boxWallWidth*2]);
                 }
                 //right side void from 2nd rear ridge to corner (numbering from fwd to rear)
                 translate([boxRidgeDepth+boxWallWidth+boxInteriorWidth+boxWallWidth-boxRoundingRadius,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
-                    cube([boxRidgeDepth+boxRoundingRadius,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxInteriorHeight+boxWallWidth*2]);
+                    cube([boxRidgeDepth+boxRoundingRadius,boxInteriorDepth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(depthSideRear/ridgePlacementRatio-widthRidgePair/2+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxInteriorHeight+boxWallWidth*2]);
                 }
                 
             } else { //else, paired side ridges do NOT fit at ratio placement
@@ -490,15 +493,12 @@ difference(){ //difference1
                     cube([fullRidgedBoxWidth,boxRidgePairOffset,boxInteriorHeight+boxWallWidth*2]);
                 }
                 //left side void from 2nd rear ridge to corner (numbering from fwd to rear)
-//                translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth,0]){
                 translate([0,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
                     cube([boxRidgeDepth+boxRoundingRadius,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
-//                    cube([boxRidgeDepth+boxRoundingRadius,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxInteriorHeight+boxWallWidth*2]);
                 }
                 //right side void from 2nd rear ridge to corner (numbering from fwd to rear)
                 translate([boxRidgeDepth+boxWallWidth+boxInteriorWidth+boxWallWidth-boxRoundingRadius,boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth,0]){
                     cube([boxRidgeDepth+boxRoundingRadius,boxRidgeDepth+boxRoundingRadius,boxInteriorHeight+boxWallWidth*2]);
-//                    cube([boxRidgeDepth+boxRoundingRadius,boxInteriorWidth+boxWallWidth*2+boxRidgeDepth*2-(boxRidgeDepth+boxRoundingRadius+depthSideForward+boxRidgeWidth+boxClipSideWidth+boxRidgeWidth+(depthSideRear-(boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth))+boxRidgeWidth+boxRidgePairOffset+boxRidgeWidth),boxInteriorHeight+boxWallWidth*2]);
                 }
                 
                 
