@@ -7,14 +7,22 @@
 //diameter of wire rack 2.8mm
 //22.3mm between wires on shelf
 
+//2021-03-02 3mm radius 1.5mm clip gap worked well. maybe  atouch too tight? but holds well. 
+
 draftingFNs = 18;
 renderingFNs = 180;
 //currentFNs = draftingFNs;
-$fn = draftingFNs;
+$fn = renderingFNs;
 debugBool = true;
 
-gloveVoidThickness = 1.2;
-gloveVoidDepth = 10;
+gloveVoidThickness = 1.5;
+gloveVoidDepth = 20;
+gloveVoidOverlap = 2; //distance before void meets sphere
+clipRadius = 3;
+clipHeight = 35;
+clipInnerRadius = 3;
+ridgeIntrusion = 3/2;
+ridgeDepth = (gloveVoidDepth-clipRadius)*2/3;
 
 
 //linear_extrude(height = 15, center = true, convexity = 10, twist = 0, slices = 20, scale = 1.0) {
@@ -28,90 +36,91 @@ gloveVoidDepth = 10;
 //}
 //
 
-
+difference(){
+union(){
 difference(){
     union(){
         //main body of clip
-        cylinder(15,2,2);
+        cylinder(clipHeight,clipRadius,clipRadius);
         
         //bottom rounded edge of clip
-        sphere(2);
+        sphere(clipRadius);
     } //end union
     
     //void for glove to slide into
-    translate([-gloveVoidThickness/2,-2,-2]){
-        cube([gloveVoidThickness,4,12]);
+    translate([-gloveVoidThickness/2,-clipRadius,-clipRadius]){
+        cube([gloveVoidThickness,clipRadius*2,gloveVoidDepth]);
     }
     
     //void to take away material above glove void
-    translate([0,-2,gloveVoidDepth]){
-        cube([2,4,15-gloveVoidDepth]);
+    translate([0,-clipRadius,gloveVoidDepth]){
+        cube([clipRadius,clipRadius*2,clipHeight-gloveVoidDepth]);
     }
 }
 
 difference(){
-//top rounded edge of clip
-translate([0,0,gloveVoidDepth]){
-    sphere(2);
-}
+    //top rounded edge of clip
+    translate([0,0,gloveVoidDepth]){
+        sphere(clipRadius);
+    }
 
 //remove bottom half of sphere
-    translate([-2,-2,8]){
-        cube([4,4,2]);
+    translate([-clipRadius,-clipRadius,gloveVoidDepth-clipRadius]){
+        cube([clipRadius*2,clipRadius*2,clipRadius]);
     }
 }
+
+
+
+//TODO CHANGE X translation
 
 //add ridges to compress glove inside clip
-translate([gloveVoidThickness/2,-1.8,0]){
+translate([gloveVoidThickness/3*2,-2.8,0]){
     rotate([0,0,45]){
-        cube([gloveVoidThickness/2,gloveVoidThickness/2,gloveVoidDepth/2]);
+        cube([gloveVoidThickness,gloveVoidThickness,ridgeDepth]);
     }
 }
-translate([-gloveVoidThickness/2,-1,0]){
+translate([-gloveVoidThickness/3*2,-1.6,0]){
     rotate([0,0,45]){
-        cube([gloveVoidThickness/2,gloveVoidThickness/2,gloveVoidDepth/2]);
+        cube([gloveVoidThickness,gloveVoidThickness,ridgeDepth]);
     }
 }
-translate([-gloveVoidThickness/2,1,0]){
+translate([-gloveVoidThickness/3*2,0.7,0]){
     rotate([0,0,45]){
-        cube([gloveVoidThickness/2,gloveVoidThickness/2,gloveVoidDepth/2]);
+        cube([gloveVoidThickness,gloveVoidThickness,ridgeDepth]);
     }
 }
-translate([gloveVoidThickness/2,0,0]){
+translate([gloveVoidThickness/3*2,-0.4,0]){
     rotate([0,0,45]){
-        cube([gloveVoidThickness/2,gloveVoidThickness/2,gloveVoidDepth/2]);
+        cube([gloveVoidThickness,gloveVoidThickness,ridgeDepth]);
     }
 }
-
 
 //top hook
-translate([3,0,15]){
-rotate([-90,0,0]){
-rotate_extrude(angle = 220, convexity = 2) {
-    translate([-3,0,0]){//half circle
-        difference(){
-            circle(2);
-            translate([0,-2,0]){
-                square(4,4);
+translate([clipInnerRadius,0,clipHeight]){
+    rotate([-90,0,0]){
+        rotate_extrude(angle = 220, convexity = 2) {
+            translate([-clipInnerRadius,0,0]){//half circle
+                difference(){
+                    circle(clipRadius);
+                    translate([0,-clipRadius,0]){
+                        square(clipRadius*2,clipRadius*2);
+                    }
+                }
             }
         }
     }
 }
-}
+}//end union
+
+//square edges for nice printing when laid on bed
+translate([-clipRadius,clipRadius*0.95,-clipRadius]){
+    cube([(clipRadius+clipInnerRadius)*2,1,clipHeight+clipRadius*2+clipInnerRadius]);
 }
 
+//make it symmetric just because
+translate([-clipRadius,-clipRadius*0.95-1,-clipRadius]){
+    cube([(clipRadius+clipInnerRadius)*2,1,clipHeight+clipRadius*2+clipInnerRadius]);
+}
 
-//translate([0,0,-7.5]){
-//rotate([90,00,0]){
-//rotate_extrude(angle = 90, convexity = 2) {
-////    translate([-2,0,0]){//half circle
-//        difference(){
-//            circle(2);
-//            translate([0,-2,0]){
-//                square(4,4);
-//            }
-//        }
-////    }
-//}
-//}
-//}
+}
