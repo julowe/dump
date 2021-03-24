@@ -29,6 +29,7 @@ trayBoardInsetZOffset = 1;
 
 
 trayBatterySupportFwdZOffset = 1.5;
+//trayBatterySupportFwdZOffset = 0;
 trayBatterySupportRearZOffset = 3.5;
 trayBatterySupportFwdX = 14;
 trayBatterySupportRearX = trayX - trayBatterySupportFwdX;
@@ -55,7 +56,7 @@ module tray(modelVoid,trayTolerance,boardXAdd){
     //also move slot for board up by 1 trayTolerance amount, so board is centered vertically between the Z tolerances
     difference(){
         //the part of the tray that goes around edge of board and into slot in case
-        cube([trayX + boardXAdd,trayY + trayTolerance,trayHeight + trayTolerance*2]);
+        cube([trayX + boardXAdd,trayY + trayTolerance*2,trayHeight + trayTolerance*2]);
 
         if (!modelVoid){    
             //remove void for edge of board
@@ -68,73 +69,112 @@ module tray(modelVoid,trayTolerance,boardXAdd){
                 cube([trayBoardCableSlotX,trayBoardCableSlotY,trayHeight + trayTolerance*2]);
             }  
             
-            //TODO remove slot for orange cable on top of board
-        }
+            //remove slot for orange cable on top & bottom (solder) of board
+//            15 from x front, .9 bottom, 1.7 top
+            translate([15,0,0]){
+                cube([3,trayBoardInsetY,trayHeight + trayTolerance*2]);
+            }  
+            
+        } // end if !modelvoid
 
+    } //end difference
+    
+    if (modelVoid){ 
+        //make void for wires under board. 3mm below tongue level, 5mm in from usb edge, 6mm in from far edge (this doesn't matter as material on this side is cut away for sliding in), 16 in from edge of tongue
+        translate([5,-16,-3]){
+            cube([trayX-5+boardXAdd,16+(trayY-3),4]);
+        }
     }
     
+    
+    
     //battery Support forward part of tray (closer to USB port)
-    translate([0,-(trayBatterySupportY-trayBatterySupportYOverlap),trayHeight]){
+    translate([0,-(trayBatterySupportY-trayBatterySupportYOverlap),(trayBoardInsetZ+trayBoardInsetZOffset)]){
         difference(){
             //main part
             cube([trayBatterySupportFwdX + boardXAdd,trayBatterySupportY,trayBatterySupportZHeight]);
 
             if (!modelVoid){ 
                 //subtract from under it to slide over components
-                //TODO Fix under voids
                 cube([trayBatterySupportFwdX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportFwdZOffset]);
             }
-        }
-    }
+        } //end difference
+    } //end translate
     
     //battery Support rear part of tray (further from USB port)
-    translate([trayBatterySupportFwdX,-(trayBatterySupportY-trayBatterySupportYOverlap),trayHeight]){
+    translate([trayBatterySupportFwdX,-(trayBatterySupportY-trayBatterySupportYOverlap),(trayBoardInsetZ+trayBoardInsetZOffset)]){
         difference(){
             //main part
             cube([trayBatterySupportRearX + boardXAdd,trayBatterySupportY,trayBatterySupportZHeight]);
-            if (!modelVoid){ 
+            if (!modelVoid){
                 //subtract from under it to slide over components
-                //TODO Fix under voids
                 cube([trayBatterySupportRearX,trayBatterySupportY-trayBatterySupportYOverlap,trayBatterySupportRearZOffset]);
+                
+                translate([1,0,0]){
+//                    cube([trayBoardCableSlotX,trayBoardInsetY,2]);
+                    cube([3,(trayBatterySupportY-trayBatterySupportYOverlap)+trayBoardInsetY,2]);
+                }  
+            } //end if !model void
+        }  //end difference
+        
+        if (modelVoid){
+
+            //make space for wires above board/tray tab. esp near button   
+            translate([trayBatterySupportRearX-13,trayBatterySupportY,0]){
+                cube([13 + boardXAdd,4,trayBatterySupportZHeight+trayBatteryHolderZ]);
             }
-        }  
-    }
+            //TODO create more space at button end of battery tray, more clearance for end of battery
+        }
+    } //end translate
     
      
     //holder for battery that sits on top of battery support XY plane
-    translate([0,-(trayBatterySupportY-trayBatterySupportYOverlap),trayHeight+trayBatterySupportZHeight]){
+    translate([0,-(trayBatterySupportY-trayBatterySupportYOverlap),(trayBoardInsetZ+trayBoardInsetZOffset)+trayBatterySupportZHeight]){
         difference(){
             cube([trayX + boardXAdd,trayBatterySupportY,trayBatteryHolderZ]);
             
             if (!modelVoid){
-                translate([0,0,0]){
-                    rotate([0,0,-45]){ //TODO hmm -45 is prob just about right. 
-                        //NOPE for exactness, battery void should be moved down a bit Y (bc battery hangs over this tray) and back some X, but I think that would get us to roughly the same spot actually
-                        //TODO move battery up Y a bit. maybe change angle
-                        cube([trayBatteryHolderX,trayBatteryHolderY,trayBatteryHolderZ]);
+                translate([-4,5,0]){
+                    rotate([0,0,-60]){
+                        cube([trayBatteryHolderX,trayBatteryHolderY+2,trayBatteryHolderZ]);
                     }
                 }
             }
-        }
+        } //end difference
+        if (modelVoid){
+            //TODO if model void then extend battery holder up some.
+            //TODO CHECK battery overhang dimensions
+            //make room for end of battery, hanging over end of tray almost until edge of board - for almost full depth of case - really 6mm (measured at 5.1 or so) further in towards usb port than the edge of tray is now
+            translate([-6,-6,0]){ //HARDCODED PAIN
+//            cube([6+10,13,9]);
+                cube([trayX + boardXAdd+6,18,trayBatteryHolderZ+1]);
+            }
+            
+            //make room for battery tray and battery wires, towards fat tongue side of tray
+            translate([0,-6+18,0]){ //HARDCODED PAIN
+//            cube([6+10,13,9]);
+                cube([trayX + boardXAdd,12,trayBatteryHolderZ+1]);
+            }
+        } //end if modelvoid
     }
-    
-            echo("Tray Y =",trayY + trayTolerance);
-        echo("Tray Height =",trayHeight + trayTolerance*2);
+
+    echo("Tray Y =",trayY + trayTolerance*2);
+    echo("Tray Height =",trayHeight + trayTolerance*2);
     
 }
 //whitespace
 //
 
 
-//these are not measuremnts of the board, but the board + tolerances etc to make void
+//these are not measurements of the board, but the board + tolerances etc to make void
 boardX = 51;
 boardXVoid = boardX + 6;//need to add minkowski radius to get through backwall
-boardY = 23;
+boardY = 24;
 boardZ = 2;
 
 VariableToBeDiscHeight = 3;
 
-//trayHeight = 4; //TODO do we want to make edge that goes into slot thinner?
+//trayHeight = 4;
 
 boardYOverflow = trayY - trayBoardInsetY;
 
@@ -142,27 +182,29 @@ boardYOverflow = trayY - trayBoardInsetY;
 module boardVoid(boardTolerance){
     //NB: All components must have a clear channel from end to final position so they can slide into case
     union(){
+        
         //base board, no components
-        cube([boardXVoid,boardY,boardZ]);
+        cube([boardXVoid,boardY+boardTolerance*2,boardZ]);
         
         //USB port
-        translate([0,boardY/2 - 8/2,boardZ]){
-            cube([boardXVoid,8,3.5]);
+        translate([0,boardY/2 - 8.8/2,boardZ]){
+            cube([boardXVoid,8.8,3.5]);
         }
         
         //USB Cable area
+        //todo CHECK move from printed test object - actual usb hole down 1 mm, move shroud hole down 1, make 1 bigger mm on bottom
         //metal port  
-        translate([-2,boardY/2 - 8/2,boardZ]){
-            cube([2,8,3.5]); //TODO make this trapezoidal
+        translate([-2,boardY/2 - 8.8/2,boardZ-1]){
+            cube([2,8.8,3.5]); //TODO make this trapezoidal
         }
-        //cable shroud 
-        translate([-2-30,boardY/2 - (11+2+2)/2,boardZ-3.5/2]){
-            cube([30,11+2+2,8]); //TODO make this trapezoidal
+        //USB cable shroud 
+        translate([-2-29,boardY/2 - (11+2+2)/2,boardZ-3.5/2-2]){
+            cube([30,11+2+2,9]); //TODO make this trapezoidal
         }
         
         //red & yellow LED
-        translate([0,4,boardZ]){
-            cube([boardXVoid,14,1.5]);
+        translate([0,3.5,boardZ]){
+            cube([boardXVoid,16,1.5]);
         }
         
          //JST Port
@@ -181,12 +223,18 @@ module boardVoid(boardTolerance){
             cube([boardXVoid-6,4,2+0.5]); //3.6 measured with 1.7 board thickness
         }
         
+        //TODO check - hole for paperclip to hit reset button
+        paperclipRadius = 0.6; //actual diam just under 1mm - measured by eye...
+        translate([9,7,boardZ]){
+//            cube([boardXVoid-6,4,2+0.5]); //3.6 measured with 1.7 board thickness
+            cylinder(20,paperclipRadius,paperclipRadius);
+        }
+        
+        
          //battery tray
         translate([15,boardY - trayBoardInsetY,-trayBoardInsetZOffset]){
             tray(true,printTolerance,40);
         }
-        
-        //TODO battery sticking out... hmm crap maybe do in tray void??
         
         //water button (Button legs over side of board taken care of by battery tray slide slot)
         translate([42,boardY-10,boardZ]){
@@ -230,6 +278,7 @@ caseZ = VariableToBeDiscHeight + (trayHeight - trayBoardInsetZOffset) + trayBatt
 caseMinkRad = 3;
 //mink cube as base
 
+echo("CaseZ= ", caseZ);
 
 sliderX = 2;
 module caseWallSlideCap(capTolerance){
