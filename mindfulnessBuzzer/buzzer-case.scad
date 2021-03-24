@@ -1,26 +1,29 @@
 //case for mindfulness buzzer/feather
-//contains disc buzzer, feather, battery, & button
+//contains disc buzzer, adafruit feather proto board, battery, & button
 //clip on end cap, or not
+// Justin Lowe, 20210324, jklideas.com
 
-//TODO
-//make battery tray module, with clip for around top edge of PCB, pass tolerance allotment (0 for printing, >0.1 etc for voiding use)
+/*rough outline of what & why:
+//make battery tray module, with clip for around top edge of PCB, pass as a variable the tolerance allotment in mm (0 for printing, >0.1 etc when using the object of the board to create a void in the actual model of the case/container)
 //make seperate 'board etc void' module. use in difference statement. use battery clip module here as well to include in void
-//figure out how to hold case together - end wall by button that slides up on Z axis into slots/receiver?
-    //pcb slides in from that side, rails on each side, top side only until JST connection, full length/Y on bottom
-    //battery tray can serve as top side rail
-//way to hit reset button. paperclip? ugh. captive button/cylinder with fingernail slot on outside of case? maybe.
-    //make finger module from rotate extrude for finger pad and linear extrude for nail, then convoluted thing for curved front of nail. 2mm depression depth
-
+//figure out how to hold case together:
+  // now using a end cap that slides in along the x axis, into the case in same direction that circuit board slides into case
+  // original idea was to have an end wall (by the button) that slides down/up on Z axis into slots/receiver (so perpendicular to the direction that the board slides into the case
+    //pcb slides in from that side (end of x axis of case), guide/holding rails on each side of case, top (far Y-axis) side rails only go from usb port along until JST connection, but full length/Y on bottom
+    //battery tray can serve as top side rail after JST port
+//way to hit reset button? paperclip for now, but ugh. captive button/cylinder with fingernail slot on outside of case? maybe.
+    // maybe if bored then make a 'fingertip' module from rotate extrude for finger pad and linear extrude for nail, then convoluted thing for curved front of nail. 2mm depression depth to make void for that captive button.
+*/
 
 draftingFNs = 36;
 renderFNs = 180;
-$fn = draftingFNs;
+$fn = renderFNs;
 
 printTolerance = 0.2;
 
+//NB: tried to make a lot of this variable based, but towards the end a lot of magic/undocumented numbers show up as I just wanted to have an actual physical thing done to use finally. 20210324jkl
 
-
-trayHeight = 4; //TODO do we want to make edge that goes into slot thinner?
+trayHeight = 4; //TODO do we want to make edge that goes into slot thinner? Nope. good so far. is durability enough? more than needed?
 trayY = 12;
 trayX = 25;
 trayBoardInsetY = 2;
