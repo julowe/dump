@@ -146,7 +146,6 @@ module tray(modelVoid,trayTolerance,boardXAdd){
         } //end difference
         if (modelVoid){
             //TODO if model void then extend battery holder up some.
-            //TODO CHECK battery overhang dimensions
             //make room for end of battery, hanging over end of tray almost until edge of board - for almost full depth of case - really 6mm (measured at 5.1 or so) further in towards usb port than the edge of tray is now
             translate([-6,-6,0]){ //HARDCODED PAIN
 //            cube([6+10,13,9]);
@@ -195,13 +194,13 @@ module boardVoid(boardTolerance){
         }
         
         //USB Cable area
-        //todo CHECK move from printed test object - actual usb hole down 1 mm, move shroud hole down 1, make 1 bigger mm on bottom
+        //from printed test object - move actual usb hole down 0.5 mm, move shroud hole down 0.5, make 1 bigger mm on bottom
         //metal port  
-        translate([-2,boardY/2 - 8.8/2,boardZ-1]){
+        translate([-2,boardY/2 - 8.8/2,boardZ-0.5]){
             cube([2,8.8,3.5]); //TODO make this trapezoidal
         }
         //USB cable shroud 
-        translate([-2-29,boardY/2 - (11+2+2)/2,boardZ-3.5/2-2]){
+        translate([-2-29,boardY/2 - (11+2+2)/2,boardZ-3.5/2-1.5]){
             cube([30,11+2+2,9]); //TODO make this trapezoidal
         }
         
@@ -226,7 +225,7 @@ module boardVoid(boardTolerance){
             cube([boardXVoid-6,4,2+0.5]); //3.6 measured with 1.7 board thickness
         }
         
-        //TODO check - hole for paperclip to hit reset button
+        //hole for paperclip to hit reset button
         paperclipRadius = 0.6; //actual diam just under 1mm - measured by eye...
         translate([9,7,boardZ]){
 //            cube([boardXVoid-6,4,2+0.5]); //3.6 measured with 1.7 board thickness
