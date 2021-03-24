@@ -352,7 +352,7 @@ module caseSlideInEndcap(clip){
 
 endcapInsetXTolerance = 1; //extra slack space
 
-module case(){
+module case(endcapType){
     difference(){
         minkowski(){
             cube([caseX,caseY,caseZ]);
@@ -366,25 +366,77 @@ module case(){
             boardVoid(0);
         }
         
-        //TODO use slider module to make void here
+        if (endcapType == "wallSlide") { //make a wall that slides into a receiving channel - up and down on z axis
+            //TODO use caseWallSlideCap module to make void here IFF using wall-slide end cap
+            
+            
+            
+        } else if (endcapType == "slideIn") { //remove material for slide in (to case) endcap
         
-        //remove material for slide in endcap
+            //remove outer edges for end cap
+            translate([caseX,-caseMinkRad,-caseMinkRad]){
+                cube([caseMinkRad,caseY+caseMinkRad*2,caseZ+caseMinkRad*2]);
+            }
+            
+            //remove material for end capo to slide in
+            translate([caseX-endcapInsetX-endcapInsetXTolerance,0,0]){
+                cube([endcapInsetX+endcapInsetXTolerance,caseY,caseZ]);
+            }
+            
+            
+            
+            
+            
+        screwHoleDiameter = 3.5;//m3 = 3mm diam, 2.93mm actual
+        screwHeadVerticalInset = 0.5;
+        screwHeadHeight = 2;
+        screwHeadDiameterOuter = 5.75; //5.37mm actual
+        screwHeadDiameterInner = screwHoleDiameter;
+            
+            
+            
+            //remove for screw shaft    
+            translate([caseX-insertXoffset-insertDiameter/2,caseY-caseMinkRad,caseZ/2]){ //move to end of case, then back the offset, then half the diameter of insert, 
+                rotate([-90,0,0]){
+                    color("Green")
+                    cylinder(caseMinkRad*2, screwHoleDiameter/2, screwHoleDiameter/2);
+                }
+            }  
+
+            
+            //remove void for screw head
+//            translate([gutterRadius+islandRadius-4-voidInsertRadius-3+3.8,0,screwHeadVerticalInset]){
+            translate([caseX-insertXoffset-insertDiameter/2,caseY+caseMinkRad-screwHeadVerticalInset,caseZ/2]){
+                rotate([90,0,0]){
+                color("Green")
+                cylinder(screwHeadHeight, screwHeadDiameterOuter/2, screwHeadDiameterInner/2);
+                }
+            }
+ 
+            //remove void for screw head inset
+            translate([caseX-insertXoffset-insertDiameter/2,caseY+caseMinkRad,caseZ/2]){
+                rotate([90,0,0]){
+                    color("Green")
+                    cylinder(screwHeadVerticalInset, (screwHeadDiameterOuter/2)*1.2, screwHeadDiameterOuter/2);
+                }
+            }
         
-        //remove outer edges for end cap
-        translate([caseX,-caseMinkRad,-caseMinkRad]){
-            cube([caseMinkRad,caseY+caseMinkRad*2,caseZ+caseMinkRad*2]);
+//            //remove void for screw head inset
+//            translate([caseX-insertXoffset-insertDiameter/2,caseY+caseMinkRad,caseZ/2]){
+//                color("Green")
+//                cylinder(screwHeadVerticalInset, (screwHeadDiameterOuter/2)*1.2, screwHeadDiameterOuter/2);
+//            }
+
         }
-        
-        //remove material for end capo to slide in
-        translate([caseX-endcapInsetX-endcapInsetXTolerance,0,0]){
-            cube([endcapInsetX+endcapInsetXTolerance,caseY,caseZ]);
-        }
-        
-        //todo
-        //make hole for screw
-        //make inset for screw head
     } //end difference
 }
+
+
+
+
+            
+
+
 
 
 
@@ -395,11 +447,11 @@ module case(){
 //this will model the void you want inside another object: tray(true,printTolerance,40); //or just a number long enough to make void go out back of case
 
 //tray(false,0,0);
-
+//tray(true,printTolerance,40);
 
 //boardVoid(0);
 
-case();
+case("slideIn");
 
 //caseWallSlideCap();
 
