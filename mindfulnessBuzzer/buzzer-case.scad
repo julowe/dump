@@ -232,7 +232,7 @@ caseMinkRad = 3;
 
 
 sliderX = 2;
-module caseSlidingCap(capTolerance){
+module caseWallSlideCap(capTolerance){
     //part that goes into channel
     union(){
         //bottom
@@ -256,7 +256,7 @@ module caseSlidingCap(capTolerance){
         }
     } //end union
     
-    //TODO - chop off some of right and left edges? or go all the way through case sides?
+    //TODO - for the slide-into-channel end cap: chop off some of right and left edges? or go all the way through case sides?
     //i'm leaning towards chopping off a mm from each side - yeah bc otherwise there is a whole column of material on each side that can pull off easily (between the two cylinders of side and back)
     //part that forms end cap
     translate([sliderX,0,0]){
@@ -279,6 +279,7 @@ module caseSlidingCap(capTolerance){
 
 endcapInsetX = 7; //this should give room for a heat set insert
 insertDiameter = 5.3;
+insertXoffset = 0.75;
 clipZ = 2;
 clipZGap = 2;
 clipY = 10;
@@ -391,7 +392,7 @@ module case(){
 
 case();
 
-//caseSlidingCap();
+//caseWallSlideCap();
 
 //caseSlideInEndcap(false);
 
