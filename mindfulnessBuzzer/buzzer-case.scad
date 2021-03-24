@@ -293,7 +293,7 @@ module caseSlideInEndcap(clip){
         difference(){
             minkowski(){
                 union(){
-                    cube([0.2,caseY,caseZ]);
+                    cube([0.4,caseY,caseZ]);
                     if(clip){
                         translate([-clipX,caseY/2-clipY/2,-(clipZ+clipZGap)]){
                             cube([clipX+0.2,clipY,clipZ+clipZGap]);
@@ -305,35 +305,44 @@ module caseSlideInEndcap(clip){
             translate([-clipX-caseMinkRad,-caseMinkRad,-caseMinkRad-clipZGap]){
                 cube([clipX+0.2+caseMinkRad,caseY+caseMinkRad*2,caseZ+caseMinkRad*2+clipZGap]);
             }
-        }
+            
+            //void for button base overhanging the end of circuit board
+            translate([0,12,5]){
+                cube([3,14,5]);
+            }
+        } //end difference
     }
+    
+
     
     //part that slides into case
     difference(){
-        translate([-endcapInsetX,caseY-7,0]){
-            cube([endcapInsetX,7,caseZ]);
+        translate([-endcapInsetX,caseY-7.2,0.2]){
+            cube([endcapInsetX,7,caseZ-0.4]);
         }
     
-        translate([-(insertDiameter/2+0.5),caseY-7,caseZ/2]){
+        //remove part for threaded heatset insert
+        translate([-(insertDiameter/2+insertXoffset),caseY-7.2,caseZ/2]){
             rotate([-90,0,0]){
                 cylinder(7,insertDiameter/2,insertDiameter/2);
             }
         }
     } //end difference
     
-    //-Y side of inset, full height
-    translate([-1.5,0,0]){
-        cube([1.5,10,caseZ]);
-    }
+    //removed because circuit board goes to end of case (i think it does go to end of case?)
+//    //-Y side of inset, full height
+//    translate([-1.5,0,0]){
+//        cube([1.5,10,caseZ]);
+//    }
     
     //-y side of inset, under board
-    translate([-4,0,0]){
-        cube([4,8,VariableToBeDiscHeight-1]);
+    translate([-5,0.2,0.2]){
+        cube([5,5,3]);
     }
     
     //-y side of inset, above board
-    translate([-endcapInsetX,0,5+boardZ]){
-        cube([endcapInsetX,8,caseZ-(5+boardZ)]);
+    translate([-endcapInsetX,0.2,caseZ-5.2]){
+        cube([endcapInsetX,8,5]);
     }
        
 }
