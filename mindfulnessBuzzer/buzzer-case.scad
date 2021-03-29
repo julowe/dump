@@ -239,7 +239,7 @@ module boardVoid(boardTolerance){
         }
         
         //water button (Button legs over side of board taken care of by battery tray slide slot)
-        translate([42,boardY-10,boardZ]){
+        translate([43,boardY-11.25,boardZ]){
             cube([10,10,10+5]);
         }
         
@@ -272,7 +272,7 @@ module boardVoid(boardTolerance){
 
 
 //TODO is caseX right??
-caseX = boardX+1; //+1 because button extends 1mm beyond edge of board //TODO TEST THIS
+caseX = boardX+2; //+1 because button extends 1mm beyond edge of board //TODO TEST THIS
 caseY = boardY + (trayY -trayBoardInsetY); //(23 + (12 - 2)
 //caseY = 30;
 //caseZ = 15; 
