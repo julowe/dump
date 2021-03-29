@@ -16,7 +16,8 @@
 
 const int
   pinResistor = 10, //pin 10 for feather 32u4 breakout grid with resistor to motor
-  interruptPin = 2;  //Adalogger uses Pin3 for INT0
+  interruptPin = 2,  //Adalogger uses Pin3 for INT0
+  ratioHoursWater = 2; //multiply waters by this number during hour water comparison. so 1.75 hours passed is still less than 1 water * 2 (current value)
 
 const float
   debouncing_time = 1000, //Debouncing Time in Milliseconds
@@ -144,7 +145,7 @@ void loop() {
     }
 
 
-  if (hoursPassed > waterDrank) {
+  if (hoursPassed > waterDrank*ratioHoursWater) {
     //angry buzz if not drinking enough water
     buzz_angry();
     if (debugSerialOutput) {
