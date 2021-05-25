@@ -25,7 +25,7 @@ ringHolderThickness = wallThickness;
 
 couchBackRad = 35 + minkRad;
 
-holderDepthAddition = 10;
+holderDepthAddition = 20;
 holderDepth = couchBackRad + speakerHoleRad + ringHolderWidth + holderDepthAddition;
 
 holderCornerRad = 7;
