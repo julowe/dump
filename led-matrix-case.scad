@@ -6,8 +6,8 @@ renderFNs = 180;
 $fn = renderFNs;
 
 caseFrontZpadding = 1;
-screenWidth = 160+2; //too wide for calipers, assume double height, +2 for fit
-screenHeight = 80+1; //80.09 measured, 78.5 height at back of panel. 0.75mm diff each side, +1 for fit
+screenWidth = 160+2-1.5; //too wide for calipers, assume double height, +2 for fit, -1.5 after full back test print
+screenHeight = 80+1-0.5; //80.09 measured, 78.5 height at back of panel. 0.75mm diff each side, +1 for fit, -0.5 after full back test print
 screenDepth = 15+caseFrontZpadding; //14.91 measured, +caseFrontZpadding for slight lip beyond leds
 
 cornerScrewXinset = 17.25;//16.5 in from right side, assume same 0.75 slant, 17.25 in from right then
@@ -46,16 +46,23 @@ plugBackerZ = caseDepth - screenDepth - plugZ;
 plugWireBackerZ = caseDepth - screenDepth - plugZ + plugWireZpadding;
 
 
-middleBackerScrewXoffset = 92 + 2.15; //92 is to middle of screw hole, 2.15 mesaured adjustment factor after test print
+middleBackerScrewXoffset = 92 + 2.15 - 1.5; //92 is to middle of screw hole, 2.15 mesaured adjustment factor after test print, 1.5 moved back after full back test print - NB offset from x=0
 middleBackerX = 15;
 middleBackerY = 12;
 middleBackerXoffset = middleBackerScrewXoffset - middleBackerX/2;
 
+keyholeScrewShaftDiam = 3.75;//measured at 3.45
+keyholeScrewHeadDiam = 8;//measured at 6.75, but make large for future flexbility?
+keyholeScrewHeadDepth = 5;//15.25 total length, 2.5 head depth, measured
+keyholeBackDepth = 3; //amount between wall and screw head
+
 
 /* TODO
-- space for buttons
+x- fix screw hole offsets - measure x-gap btw case and matrix - gap is 1.5mm
+- space on top for physical buttons
 - keyhole hangers - make at same spot as top two corner screw holes
 - back vents?
+  - for vents, make screw hole/plug supports larger (by wallThickness) to go into case, this way they then won't be cut up by vent shapes that difference the main shell, but the vents can still perforate most of case wall edge
 */
 
 
@@ -79,7 +86,7 @@ difference(){
 }
 
 
-//bottom right corner, power plug backer
+//bottom right corner, power plug backer/holder
 difference(){
     //main block that is behind wires
     translate([caseWidth-caseWallThickness-(plugX+plugWireBackerX),caseWallThickness,0]){
