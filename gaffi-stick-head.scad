@@ -71,26 +71,108 @@ if (drop_curve_angle_provided){
 
 sphere(head_sphere_radius);
 
+donut_offset = head_sphere_radius/2+15;
+
+        rotate_extrude(convexity = 10){
+//            translate([drop_sphere_translation_x, drop_sphere_translation_y]){
+            //to make the donut we just need it moved above the x axis and juuuuust barely past the y axis. placing said object is when we might need other math
+            translate([donut_offset, donut_offset-25]){
+                color("red")
+                circle(r = head_sphere_radius/3+0);
+            }  
+        }
 
 
 
-//difference(){
-////translate([0, 0, -(main_sphere_radius + main_point_length)]){
-//translate([0, 0, -(main_sphere_radius*2)+intersect_height + main_point_tip_radius]){
-//    sphere(main_sphere_radius);
+
+//////difference(){
+////////translate([0, 0, -(main_sphere_radius + main_point_length)]){
+//////translate([0, 0, -(main_sphere_radius*2)+intersect_height + main_point_tip_radius]){
+//////    sphere(main_sphere_radius);
+//////}
+//////
+//////
+//////    rotate_extrude(convexity = 10){
+//////        translate([main_point_circle_radius + main_point_tip_radius, 0, 0]){
+//////            circle(r = main_point_circle_radius);
+//////        }
+//////    }
+//////}
+        
+//        i = 0;
+        
+        for (i = [0:15:350]){
+        rotate([53,0,i]){
+        translate([0,0,84]){
+            rotate([-20,0,0]){
+makeSecondaryPoint(20,50,1,1);
+            }
+        }
+    } 
 //}
-//
-//
-//    rotate_extrude(convexity = 10){
-//        translate([main_point_circle_radius + main_point_tip_radius, 0, 0]){
-//            circle(r = main_point_circle_radius);
-//        }
-//    }
-//}
 
+        rotate([66,0,i]){
+        translate([0,0,86]){
+            rotate([7,0,0]){
+makeSecondaryPoint(20,50,1,1);
+            }
+        }
+    } 
+}
+
+module makeSecondaryPoint(point_height, subtractor_donut_radius, skew_factor, point_clip_radius){
+    
+    subtractor_donut_radius = subtractor_donut_radius;
+    
+        chord_length_for_point_rounding = 2*sqrt(2*subtractor_donut_radius*point_clip_radius - pow(point_clip_radius, 2));
+    
+//    echo(chord_length_for_point_rounding);
+    
+    degree_to_bottom_of_point_rounding_subtractor = atan((2*point_clip_radius)/chord_length_for_point_rounding)*4/2; //divide by two at the end to get half the angle of chord, so can find y offset
+    
+//    echo(degree_to_bottom_of_point_rounding_subtractor);
+    
+    y_offset_from_center_height_of_torus_for_point_truncator = sin(degree_to_bottom_of_point_rounding_subtractor)*subtractor_donut_radius;
+    echo("secondary point");
+    echo(y_offset_from_center_height_of_torus_for_point_truncator);
+    
+    translate([0,0,-(subtractor_donut_radius-point_height-y_offset_from_center_height_of_torus_for_point_truncator+point_clip_radius)]){
+        difference(){
+        h=subtractor_donut_radius;
+        w=subtractor_donut_radius;
+        
+        translate([0, 0, 0]){
+            cylinder(h, w, w);
+        }
+        
+        rotate_extrude(convexity = 10){
+//            translate([drop_sphere_translation_x, drop_sphere_translation_y]){
+            //to make the donut we just need it moved above the x axis and juuuuust barely past the y axis. placing said object is when we might need other math
+            translate([subtractor_donut_radius+0.0001, subtractor_donut_radius]){
+                color("red")
+                circle(r = subtractor_donut_radius);
+            }  
+        }
+        
+        //remove pointy tip
+        translate([0, 0, subtractor_donut_radius-y_offset_from_center_height_of_torus_for_point_truncator]){
+            cylinder(h, w, w);
+        }
+        //remove excess bottom curve
+        translate([0, 0, 0]){
+            cylinder(h-point_height-y_offset_from_center_height_of_torus_for_point_truncator+point_clip_radius, w, w);
+        }
+
+    }
+    
+        translate([0,0,subtractor_donut_radius-y_offset_from_center_height_of_torus_for_point_truncator]){
+        sphere(point_clip_radius);
+    }
+}
+    
+}
 
 //https://en.wikipedia.org/wiki/Circular_segment
-
 
 module makeMainPoint(radius_of_main_body, degree_of_incidence_wrt_main_body, degree_of_incidence_wrt_drop_subtractor, radius_of_point_truncation){
     
