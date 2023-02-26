@@ -9,10 +9,10 @@ use <dotSCAD/util/reverse.scad>
 
 
 
-rough_preview_fns = 30;
+rough_preview_fns = 20;
 render_fns = 180;
 
-$fn = render_fns;
+$fn = rough_preview_fns;
 
 
 /* ---------------------------------------------\
@@ -46,9 +46,9 @@ staff_end_size_ratio = 1.6;
 Main_Head_Diameter_X = 100; //roughly 4 inches
 //Main_Head_Diameter_Y = 100; //not dealing with this extra math right now.
 Main_Head_Diameter_Y = Main_Head_Diameter_X;
-Main_Head_Height_Z = 45;
+Main_Head_Height_Z = 35;
 
-Depth_Of_Chisel_Path = 5;
+Depth_Of_Chisel_Path = 4;
 Upper_Angle_Of_Chisel = 30;
 Lower_Angle_Of_Chisel = 30;
 Additional_Squared_Off_Depth_After_Chisel_Cut = 0;
@@ -56,9 +56,9 @@ Vertical_Distance_Between_Chisel_Cuts = 3; //'vertical' being going up the y axi
 Horizontal_Distance_Between_Chisel_Cuts = 3; //'horizontal' being going around the z axis, ie the ridges going around the shorter part of ellipsoid, the vertical bands).  this is the pythag (straight line) distance between one ridge's upper edge and the next's lower edge, not the length of the arc between the two.
 
 
-Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Outside_of_Head = 114;
+Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Outside_of_Head = 85;
 Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Inside_of_Head = 117;
-Remove_Platform_Material_From_Inside_of_Head = true;
+Remove_Platform_Material_From_Inside_of_Head = false;
 Remove_Platform_Material_From_Outside_of_Head = true;
 
 
@@ -162,49 +162,52 @@ difference(){
         sphere(Ridge_Head_Diameter_X/2);
 //    }
     
-    if (Remove_Platform_Material_From_Outside_of_Head){
-        cylinder(h = Ridge_Head_Height_Z+1, r2 = Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Outside_of_Head/2, r1 = 1, center = false); //the +1 is so surfaces cut clean through and i don't get random cgal errors :-/
-    }
-    
     if (Remove_Platform_Material_From_Inside_of_Head){
+        cylinder(h = Ridge_Head_Height_Z+1, r2 = Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Inside_of_Head/2, r1 = 1, center = false); //the +1 is so surfaces cut clean through and i don't get random cgal errors :-/
+    }
+    
+    if (Remove_Platform_Material_From_Outside_of_Head){
         translate([0, 0, -(Ridge_Head_Height_Z+1)]){
-            cylinder(h = Ridge_Head_Height_Z+1, r1 = Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Inside_of_Head/2, r2=1, center = false); //the +1 is so surfaces cut clean through and i don't get random cgal errors :-/
+//            cylinder(h = Ridge_Head_Height_Z+1, r1 = Diameter_of_Material_to_Remove_Inside_Ridged_Surface_on_Outside_of_Head/2, r2=1, center = false); //the +1 is so surfaces cut clean through and i don't get random cgal errors :-/
+            cylinder(h = Ridge_Head_Height_Z+1, r1 = 33, r2=33, center = false); //the +1 is so surfaces cut clean through and i don't get random cgal errors :-/
         }
     }
     
     
-    //for ref: module makeCircularChiselPath(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth, rotationAboutYaxis, rotationAboutZaxis, radiusOfChiselPointPath){
+    //for ref: module makeCircularChiselPath(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth, rotationAboutYaxis, start, endrotationAboutZaxis, radiusOfChiselPointPath){
     
-    for (q = [0:9:180]){
+    for (q = [0:9:360]){
         rotate([q,90,0]){
-            makeCircularChiselPath(Upper_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Depth_Of_Chisel_Path, Additional_Squared_Off_Depth_After_Chisel_Cut, 0, 360, Main_Head_Diameter_X/2);
+            makeCircularChiselPath(Upper_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Depth_Of_Chisel_Path, Additional_Squared_Off_Depth_After_Chisel_Cut, 0, 45, 134, Main_Head_Diameter_X/2);
         }
     }
     
-    makeCircularChiselPath(Upper_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Depth_Of_Chisel_Path, Additional_Squared_Off_Depth_After_Chisel_Cut, 0, 360, Main_Head_Diameter_X/2);
+    makeCircularChiselPath(Upper_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Depth_Of_Chisel_Path, Additional_Squared_Off_Depth_After_Chisel_Cut, 0, 0, 360, Main_Head_Diameter_X/2);
     
     //use Vertical_Distance_Between_Chisel_Cuts to calc placememt of next ridge
     
     a=Main_Head_Diameter_X/2 + 5;
     b=Main_Head_Diameter_X/2 + 5;
     
-//       rotationAngles = [9.2, 18.4, 27.6, 36.8, -9.2, -18.4, -27.6, -36.8];
-       rotationAngles = [9.2, 18.4, 27.6, 37, -9.2, -18.4, -27.6, -36.8];
+       rotationAngles = [9.2, 18.4, 27.6, 36.8, -9.2, -18.4, -27.6, -36.8, -46]; //negative angles are for outside face of club head (away from shaft)
+//       rotationAngles = [-9.2, -18.4, -27.6, -36.8, -46];
+    Upper_AngleS_Of_Chisel = [Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel, Upper_Angle_Of_Chisel];
+    Lower_AngleS_Of_Chisel = [Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Lower_Angle_Of_Chisel, 44];
     
     
-    for (h = rotationAngles){
+    for (i = [0:len(rotationAngles)-1]){
 //        echo(h);
         
-            heightOfChiselPath = (Main_Head_Diameter_X/2)*sin(h);
+            heightOfChiselPath = (Main_Head_Diameter_X/2)*sin(rotationAngles[i]);
 //    echo(heightOfChiselPath);
-        modifiedChiselPathDiameter = (Main_Head_Diameter_X/2)*cos(h);
+        modifiedChiselPathDiameter = (Main_Head_Diameter_X/2)*cos(rotationAngles[i]);
 //    echo(modifiedChiselPathDiameter);
 //    modifiedChiselPathDiameter = 40;
 //    echo(modifiedChiselPathDiameter);
     translate([0,0,heightOfChiselPath]){
-    //for ref: module makeCircularChiselPath(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth, rotationAboutYaxis, rotationAboutZaxis, radiusOfChiselPointPath){
+    //for ref: module makeCircularChiselPath(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth, rotationAboutYaxis, start, endrotationAboutZaxis, radiusOfChiselPointPath){
         
-        makeCircularChiselPath(Upper_Angle_Of_Chisel, Lower_Angle_Of_Chisel, Depth_Of_Chisel_Path, Additional_Squared_Off_Depth_After_Chisel_Cut, h, 360, modifiedChiselPathDiameter);
+        makeCircularChiselPath(Upper_AngleS_Of_Chisel[i], Lower_AngleS_Of_Chisel[i], Depth_Of_Chisel_Path, Additional_Squared_Off_Depth_After_Chisel_Cut, rotationAngles[i], 0, 360, modifiedChiselPathDiameter);
         
     }
     
@@ -233,21 +236,16 @@ module makeChiselHead(upperAngle, lowerAngle, depth, extraSquaredDepth){
     
 }
 
-module makeCircularChiselPath(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth, rotationAboutYaxis, rotationAboutZaxis, radiusOfChiselPointPath){
-    //check that ... TODO
-    
-    
-    rotate_extrude(angle = rotationAboutZaxis, convexity = 10){
-        translate([radiusOfChiselPointPath, 0, 0]){
-            rotate([0, 0, rotationAboutYaxis]){ //y rotation set to z here becayse extrude rotates object around z axis
-                makeChiselHead(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth);
+module makeCircularChiselPath(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth, rotationAboutYaxis, startRotationAboutZaxis, endRotationAboutZaxis, radiusOfChiselPointPath){
+    //check that this parameter is less than that param... TODO
+
+    rotate([0, 0, startRotationAboutZaxis]){ //y rotation set to z here becayse extrude rotates object around z axis
+        rotate_extrude(angle = endRotationAboutZaxis-startRotationAboutZaxis, convexity = 10){
+            translate([radiusOfChiselPointPath, 0, 0]){
+                rotate([0, 0, rotationAboutYaxis]){ //y rotation set to z here becayse extrude rotates object around z axis
+                    makeChiselHead(chiselUpperAngle, chiselLowerAngle, chiselDepth, chiselExtraSquaredDepth);
+                }
             }
         }
     }
-    
-    
-    
-    
-    
-    
 }
