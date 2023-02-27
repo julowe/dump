@@ -331,11 +331,11 @@ path_staff_and_bend = flat(path_staff_and_bend_temp);
     union(){ 
         
 difference(){
-    union()
+    union(){
 
-//        translate([0,0,-(staff_transition_ring_height+0.1)]){
-//            cylinder(staff_transition_ring_height, staff_actual_diameter/2, staff_start_diameter/2);
-//        }
+        translate([0,0,-(staff_transition_ring_height-0.0)]){
+            cylinder(staff_transition_ring_height, staff_actual_diameter/2, staff_start_diameter/2);
+        }
         
         path_extrude(staff_connector_start_circle, path_staff_and_bend,scale = staff_end_size_ratio, method = "AXIS_ANGLE"); //AXIS_ANGLE   EULER_ANGLE
     } //end union to make shaft connection
