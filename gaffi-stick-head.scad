@@ -48,56 +48,22 @@ if (drop_curve_angle_provided){
 }
 
 
-
-
-
-
-
-
-//translate([0, 0, -main_point_length]){
-//    cylinder(main_point_length, main_sphere_diameter/2, main_sphere_diameter/2);
-//}
-///skew to double height of tip, using just bottom to but off parts of other object
-//scale([1, 1, 1]){
-//    rotate_extrude(convexity = 10, $fn = 100)
-////        translate([main_point_length + main_point_tip_diameter, 0, 0])
-//        translate([main_sphere_diameter/2 + main_point_tip_diameter, 0, 0])
-//            circle(r = main_sphere_diameter/2 - main_point_tip_diameter/2, $fn = 100);
-//}
-
-//translate([0,0,-1]){
-//circle(r = head_sphere_radius);
-//}
-
 sphere(head_sphere_radius);
+
+
 
 donut_offset = head_sphere_radius/2+15;
 
-        rotate_extrude(convexity = 10){
+rotate_extrude(convexity = 10){
 //            translate([drop_sphere_translation_x, drop_sphere_translation_y]){
-            //to make the donut we just need it moved above the x axis and juuuuust barely past the y axis. placing said object is when we might need other math
-            translate([donut_offset, donut_offset-25]){
-                color("red")
-                circle(r = head_sphere_radius/3+0);
-            }  
-        }
+    //to make the donut we just need it moved above the x axis and juuuuust barely past the y axis. placing said object is when we might need other math
+    translate([donut_offset, donut_offset-25]){
+        color("red")
+        circle(r = head_sphere_radius/3+0);
+    }  
+}
 
 
-
-
-//////difference(){
-////////translate([0, 0, -(main_sphere_radius + main_point_length)]){
-//////translate([0, 0, -(main_sphere_radius*2)+intersect_height + main_point_tip_radius]){
-//////    sphere(main_sphere_radius);
-//////}
-//////
-//////
-//////    rotate_extrude(convexity = 10){
-//////        translate([main_point_circle_radius + main_point_tip_radius, 0, 0]){
-//////            circle(r = main_point_circle_radius);
-//////        }
-//////    }
-//////}
         
 //        i = 0;
         
@@ -124,7 +90,7 @@ module makeSecondaryPoint(point_height, subtractor_donut_radius, skew_factor, po
     
     subtractor_donut_radius = subtractor_donut_radius;
     
-        chord_length_for_point_rounding = 2*sqrt(2*subtractor_donut_radius*point_clip_radius - pow(point_clip_radius, 2));
+    chord_length_for_point_rounding = 2*sqrt(2*subtractor_donut_radius*point_clip_radius - pow(point_clip_radius, 2));
     
 //    echo(chord_length_for_point_rounding);
     
@@ -133,8 +99,8 @@ module makeSecondaryPoint(point_height, subtractor_donut_radius, skew_factor, po
 //    echo(degree_to_bottom_of_point_rounding_subtractor);
     
     y_offset_from_center_height_of_torus_for_point_truncator = sin(degree_to_bottom_of_point_rounding_subtractor)*subtractor_donut_radius;
-    echo("secondary point");
-    echo(y_offset_from_center_height_of_torus_for_point_truncator);
+//    echo("secondary point");
+//    echo(y_offset_from_center_height_of_torus_for_point_truncator);
     
     translate([0,0,-(subtractor_donut_radius-point_height-y_offset_from_center_height_of_torus_for_point_truncator+point_clip_radius)]){
         difference(){
@@ -184,14 +150,14 @@ module makeMainPoint(radius_of_main_body, degree_of_incidence_wrt_main_body, deg
     
     chord_length_for_point_rounding = 2*sqrt(2*drop_subtractor_sphere_radius*radius_of_point_truncation - pow(radius_of_point_truncation, 2));
     
-    echo(chord_length_for_point_rounding);
+//    echo(chord_length_for_point_rounding);
     
     degree_to_bottom_of_point_rounding_subtractor = atan((2*radius_of_point_truncation)/chord_length_for_point_rounding)*4/2; //divide by two at the end to get half the angle of chord, so can find y offset
     
-    echo(degree_to_bottom_of_point_rounding_subtractor);
+//    echo(degree_to_bottom_of_point_rounding_subtractor);
     
     y_offset_from_center_height_of_torus_for_point_truncator = sin(degree_to_bottom_of_point_rounding_subtractor)*drop_subtractor_sphere_radius;
-    echo(y_offset_from_center_height_of_torus_for_point_truncator);
+//    echo(y_offset_from_center_height_of_torus_for_point_truncator);
     
     difference(){
         h=abs(drop_subtractor_sphere_radius*sin(degree_of_incidence_wrt_drop_subtractor));
@@ -221,33 +187,7 @@ module makeMainPoint(radius_of_main_body, degree_of_incidence_wrt_main_body, deg
     translate([0,0,drop_sphere_translation_y-y_offset_from_center_height_of_torus_for_point_truncator]){
         sphere(radius_of_point_truncation);
     }
-//            translate([0, 0, drop_sphere_translation_y-y_offset_from_center_height_of_torus_for_point_truncator]){
-//            cylinder(10, 10, 10);
-//        }
-        
-//                rotate_extrude(convexity = 10, $fn = 100){
-////            translate([drop_sphere_translation_x, drop_sphere_translation_y]){
-//            //to make the donut we just need it moved above the x axis and juuuuust barely past the y axis. placing said object is when we might need other math
-//            translate([drop_subtractor_sphere_radius+0.0001, drop_subtractor_sphere_radius]){
-//                color("red")
-//                circle(r = drop_subtractor_sphere_radius);
-//            }  
-//        }
-        
-        
-        
-        
-    
-    
-//            h=abs(drop_subtractor_sphere_radius*sin(degree_of_incidence_wrt_drop_subtractor));
-//        w=abs(radius_of_main_body*cos(degree_of_incidence_wrt_main_body)); //w=x
-//        translate([main_sphere_translation_x, main_sphere_translation_y, 10]){
-//        translate([radius_of_main_body*cos(degree_of_incidence_wrt_drop_subtractor), drop_subtractor_sphere_radius*sin(degree_of_incidence_wrt_drop_subtractor), 10]){
-//        translate([0, radius_of_main_body*sin(degree_of_incidence_wrt_main_body), 10]){
-////            circle(r = main_sphere_radius);
-//            color("blue")
-//            square([w,h], center=false);
-//        }
+
         
         
 }
