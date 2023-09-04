@@ -1,5 +1,5 @@
 //desktop monitor mount
-rough_preview_fns = 20;
+rough_preview_fns = 10;
 render_fns = 60;
 
 $fn = $preview ? rough_preview_fns : render_fns;
@@ -24,7 +24,7 @@ c_clamp_monitor_front_support_depth = 10; //how much material for lip in front o
 
 monitor_cutout_depth = 22;
 monitor_cutout_height = 22;
-monitor_cutout_offset_depth = 10; //TODO MEASURE!! //this is how much space does curved back of monitor take up when flush against wall until the start of lip that holds monitor up from bottom
+monitor_cutout_offset_depth = 45; //TODO MEASURE!! wild measurement currently //this is how much space does curved back of monitor take up when flush against wall until the start of lip that holds monitor up from bottom
 
 min_depth_monitor_holder = monitor_cutout_offset_depth + monitor_cutout_depth + c_clamp_monitor_front_support_depth;
 
@@ -37,46 +37,57 @@ monitor_to_desk_vertical_distance = 160;
 stand_height = (c_clamp_height_under_desk + desktop_height + monitor_to_desk_vertical_distance + monitor_cutout_height);
 //stand_height = 245; //bc print bed is 250 max - but this is actually a little higher than I need.
 
+minkrad = 2;
 
-
-//simplest
 difference(){
-    //make main body
-        cube([(desk_to_wall_gap_width + c_clamp_depth_under_desk),c_clamp_width,stand_height]);
+    minkowski(){
+        union(){
+            difference(){
+                //make main body
+                    cube([(desk_to_wall_gap_width + c_clamp_depth_under_desk),c_clamp_width,stand_height]);
 
+                //subtract material in front of monitor support shelf/lip. yeah this is a little backwards, but it's done now.
+                translate([min_depth_monitor_holder, -offset_for_preview, c_clamp_height_under_desk]){
+                    cube([100,100,250]);
+                }
+            }
     
+            //add in aesthetic front swoop
+            translate([min_depth_monitor_holder,0,(c_clamp_height_under_desk + desktop_height)]){
+                difference(){
+                    //make main swoop material
+                    cube([c_clamp_front_swoop_depth,c_clamp_width,c_clamp_front_swoop_depth]);
+                    
+                    //subtract cylinder to make it a swoop
+                    translate([c_clamp_front_swoop_depth,-offset_for_preview,c_clamp_front_swoop_depth]){
+                        rotate([-90,0,0]){
+                            cylinder(100, c_clamp_front_swoop_depth, c_clamp_front_swoop_depth);
+                        }
+                    }
+                }
+            }
+        }
+        
+        sphere(minkrad);
+    }
+
     //subtract area for desk
-    translate([desk_to_wall_gap_width, -offset_for_preview, c_clamp_height_under_desk]){
+    translate([desk_to_wall_gap_width, -(minkrad+offset_for_preview), c_clamp_height_under_desk]){
         cube([100,100,desktop_height]);
     }
     
     //subtract area for monitor
-    translate([monitor_cutout_offset_depth, -offset_for_preview, stand_height-monitor_cutout_depth]){
-        cube([monitor_cutout_depth,100,monitor_cutout_height+offset_for_preview]);
+    translate([monitor_cutout_offset_depth, -(minkrad+offset_for_preview), stand_height-monitor_cutout_depth]){
+        cube([monitor_cutout_depth,100,monitor_cutout_height+minkrad+offset_for_preview]);
     }
     
-    //subtract material in front of monitor support shelf/lip
-//    translate([min_depth_monitor_holder, -offset_for_preview, c_clamp_height_under_desk + desktop_height + c_clamp_front_swoop_depth]){
-    translate([min_depth_monitor_holder, -offset_for_preview, c_clamp_height_under_desk]){
-        cube([100,100,250]);
+    //slice off back of stand so flush with wall without rounded edges
+    translate([-(minkrad+offset_for_preview), -(minkrad+offset_for_preview), -(minkrad+offset_for_preview)]){
+        cube([minkrad,100,250]);
     }
     
 }
 
-//add in aesthetic front swoop
-translate([min_depth_monitor_holder,0,(c_clamp_height_under_desk + desktop_height)]){
-    difference(){
-        //make main swoop material
-        cube([c_clamp_front_swoop_depth,c_clamp_width,c_clamp_front_swoop_depth]);
-        
-        //subtract cylinder to make it a swoop
-        translate([c_clamp_front_swoop_depth,-offset_for_preview,c_clamp_front_swoop_depth]){
-            rotate([-90,0,0]){
-                cylinder(100, c_clamp_front_swoop_depth, c_clamp_front_swoop_depth);
-            }
-        }
-    }
-}
 
 ////TPU Pad
 //tpu_model_offset = c_clamp_width + 20;
